@@ -1,39 +1,28 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from datetime import datetime, timezone
+from pathlib import Path
 
-app = FastAPI(
-    title="Team Activity Live Server",
-    version="1.0.0"
-)
+app = FastAPI(title="Team Activity Live Server")
 
-# Allow frontend/dashboard to access the API
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Stores the latest activity of each employee
 latest_activity = {}
 
+BASE_DIR = Path(__file__).resolve().parent
 
-# -----------------------------
-# Server Health Check
-# -----------------------------
+
 @app.get("/")
 def home():
-    return {
-        "status": "success",
-        "message": "Team Activity Live Server is running"
-    }
+    return FileResponse(BASE_DIR / "index.html")
 
 
-# -----------------------------
-# Receive Employee Activity
-# -----------------------------
 @app.post("/api/activity")
 def receive_activity(data: dict):
 
@@ -49,6 +38,7 @@ def receive_activity(data: dict):
         "employee_id": employee_id,
         "status": data.get("status", "unknown"),
         "application": data.get("application", "unknown"),
+        "window_title": data.get("window_title", ""),
         "timestamp": data.get(
             "timestamp",
             datetime.now(timezone.utc).isoformat()
@@ -56,7 +46,6 @@ def receive_activity(data: dict):
         "server_received_at": datetime.now(timezone.utc).isoformat()
     }
 
-    # Update latest activity for this employee
     latest_activity[employee_id] = activity
 
     print("Received activity:", activity)
@@ -68,9 +57,6 @@ def receive_activity(data: dict):
     }
 
 
-# -----------------------------
-# Get Team Activity
-# -----------------------------
 @app.get("/api/team")
 def get_team_activity():
 
