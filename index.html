@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -168,141 +168,887 @@
 
 
 <script>
+ -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-const API_URL =
-    "https://team-activity-server.vercel.app/api/team";
+    <title>Team Activity Dashboard</title>
 
-
-async function loadActivity() {
-
-    try {
-
-        const response = await fetch(API_URL);
-
-        const data = await response.json();
-
-        const employees = data.employees || [];
-
-
-        // Total employees
-
-        document.getElementById("totalEmployees").textContent =
-            employees.length;
-
-
-        // Active employees
-
-        const activeCount = employees.filter(
-            employee => employee.status === "active"
-        ).length;
-
-        document.getElementById("activeEmployees").textContent =
-            activeCount;
-
-
-        // Table
-
-        const table =
-            document.getElementById("activityTable");
-
-        table.innerHTML = "";
-
-
-        if (employees.length === 0) {
-
-            table.innerHTML = `
-                <tr>
-                    <td colspan="5">
-                        No employee activity available
-                    </td>
-                </tr>
-            `;
-
-            return;
+    <style>
+        * {
+            box-sizing: border-box;
         }
 
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            color: #222;
+        }
 
-        employees.forEach(employee => {
+        .header {
+            background: #1f2937;
+            color: white;
+            padding: 20px 30px;
+        }
 
-            const row = document.createElement("tr");
+        .header h1 {
+            margin: 0;
+            font-size: 26px;
+        }
 
+        .header p {
+            margin: 6px 0 0;
+            color: #d1d5db;
+        }
 
-            const statusClass =
-                employee.status === "active"
-                    ? "active"
-                    : "inactive";
+        .container {
+            padding: 25px;
+        }
 
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 25px;
+        }
 
-            // Convert UTC timestamp to Indian Standard Time
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
 
-            let lastSync = "-";
+        .card h3 {
+            margin: 0 0 10px;
+            font-size: 15px;
+            color: #6b7280;
+        }
 
-            if (employee.timestamp) {
+        .card .value {
+            font-size: 28px;
+            font-weight: bold;
+        }
 
-                lastSync = new Date(
-                    employee.timestamp
-                ).toLocaleString("en-IN", {
+        .employee-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
 
-                    timeZone: "Asia/Kolkata",
+        .employee-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
 
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
+        .employee-id {
+            font-size: 20px;
+            font-weight: bold;
+        }
 
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    second: "2-digit",
+        .status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+        }
 
-                    hour12: true
+        .active {
+            background: #dcfce7;
+            color: #166534;
+        }
 
-                });
+        .idle {
+            background: #fef3c7;
+            color: #92400e;
+        }
 
+        .unknown {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .metric {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .metric-title {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 6px;
+        }
+
+        .metric-value {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .section-title {
+            font-size: 17px;
+            font-weight: bold;
+            margin: 20px 0 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            background: #f9fafb;
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        td {
+            font-size: 14px;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 10px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: #2563eb;
+            transition: width 0.5s ease;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+            background: white;
+            border-radius: 12px;
+        }
+
+        .footer {
+            text-align: center;
+            color: #6b7280;
+            font-size: 12px;
+            padding: 20px;
+        }
+
+        @media (max-width: 900px) {
+
+            .summary {
+                grid-template-columns: repeat(2, 1fr);
             }
 
+            .metrics {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
 
-            row.innerHTML = `
+        @media (max-width: 600px) {
 
-                <td>
-                    ${employee.employee_id || "-"}
+            .summary {
+                grid-template-columns: 1fr;
+            }
+
+            .metrics {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+
+        <h1>Team Activity Dashboard</h1>
+
+        <p>
+            Employee Activity & Working Hours Monitoring
+        </p>
+
+    </div>
+
+
+    <div class="container">
+
+        <!-- TEAM SUMMARY -->
+
+        <div class="summary">
+
+            <div class="card">
+
+                <h3>Total Employees</h3>
+
+                <div
+                    class="value"
+                    id="totalEmployees">
+                    0
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <h3>Active Employees</h3>
+
+                <div
+                    class="value"
+                    id="activeEmployees">
+                    0
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <h3>Expected Working Time</h3>
+
+                <div
+                    class="value">
+                    8h
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <h3>Last Dashboard Sync</h3>
+
+                <div
+                    class="value"
+                    id="lastSync"
+                    style="font-size:16px;">
+                    -
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- EMPLOYEE DATA -->
+
+        <div id="employeeContainer">
+
+            <div class="empty">
+                Loading team activity...
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="footer">
+
+        Team Activity Monitoring System
+
+    </div>
+
+
+<script>
+
+const API_URL =
+    "https://team-activity-server.vercel.app";
+
+
+function formatPercentage(activeSeconds) {
+
+    const expected =
+        8 * 60 * 60;
+
+    let percentage =
+        (activeSeconds / expected) * 100;
+
+    percentage =
+        Math.min(
+            Math.max(
+                percentage,
+                0
+            ),
+            100
+        );
+
+    return percentage.toFixed(1);
+
+}
+
+
+function getStatusClass(status) {
+
+    if (status === "active") {
+
+        return "status active";
+
+    }
+
+    if (status === "idle") {
+
+        return "status idle";
+
+    }
+
+    return "status unknown";
+
+}
+
+
+function getStatusText(status) {
+
+    if (status === "active") {
+
+        return "ACTIVE";
+
+    }
+
+    if (status === "idle") {
+
+        return "IDLE";
+
+    }
+
+    return "UNKNOWN";
+
+}
+
+
+function createEmployeeCard(employee) {
+
+    const activeSeconds =
+        Number(
+            employee.active_seconds || 0
+        );
+
+
+    const idleSeconds =
+        Number(
+            employee.idle_seconds || 0
+        );
+
+
+    const expectedSeconds =
+        Number(
+            employee.expected_working_seconds
+            || 28800
+        );
+
+
+    const percentage =
+        Math.min(
+            (activeSeconds /
+            expectedSeconds) * 100,
+            100
+        );
+
+
+    const applicationUsage =
+        employee.application_usage || {};
+
+
+    let usageRows = "";
+
+
+    const apps =
+        Object.entries(
+            applicationUsage
+        );
+
+
+    apps.sort(
+        (a, b) => {
+
+            return parseDuration(b[1])
+                - parseDuration(a[1]);
+
+        }
+    );
+
+
+    if (apps.length === 0) {
+
+        usageRows = `
+            <tr>
+                <td colspan="2">
+                    No application data available
                 </td>
+            </tr>
+        `;
 
-                <td class="${statusClass}">
-                    ${employee.status || "-"}
-                </td>
+    } else {
 
-                <td>
-                    ${employee.application || "-"}
-                </td>
+        apps.forEach(
+            ([app, duration]) => {
 
-                <td>
-                    ${employee.window_title || "-"}
-                </td>
+                usageRows += `
+                    <tr>
+                        <td>
+                            ${escapeHtml(app)}
+                        </td>
 
-                <td>
-                    ${lastSync}
-                </td>
+                        <td>
+                            ${escapeHtml(duration)}
+                        </td>
+                    </tr>
+                `;
 
-            `;
-
-
-            table.appendChild(row);
-
-        });
+            }
+        );
 
     }
 
 
-    catch (error) {
+    return `
 
-        console.error(error);
+        <div class="employee-card">
 
-        document.getElementById("activityTable").innerHTML = `
+            <div class="employee-header">
 
-            <tr>
-                <td colspan="5">
-                    Unable to load team activity
-                </td>
-            </tr>
+                <div class="employee-id">
+
+                    Employee:
+                    ${escapeHtml(
+                        employee.employee_id
+                    )}
+
+                </div>
+
+                <div
+                    class="${getStatusClass(
+                        employee.status
+                    )}">
+
+                    ${getStatusText(
+                        employee.status
+                    )}
+
+                </div>
+
+            </div>
+
+
+            <div class="metrics">
+
+
+                <div class="metric">
+
+                    <div class="metric-title">
+                        Expected Working Time
+                    </div>
+
+                    <div class="metric-value">
+
+                        ${escapeHtml(
+                            employee.expected_working_time
+                            || "8h 0m"
+                        )}
+
+                    </div>
+
+                </div>
+
+
+                <div class="metric">
+
+                    <div class="metric-title">
+                        Actual Active Time
+                    </div>
+
+                    <div class="metric-value">
+
+                        ${escapeHtml(
+                            employee.active_time
+                            || "0h 0m"
+                        )}
+
+                    </div>
+
+                </div>
+
+
+                <div class="metric">
+
+                    <div class="metric-title">
+                        AFK / Idle Time
+                    </div>
+
+                    <div class="metric-value">
+
+                        ${escapeHtml(
+                            employee.idle_time
+                            || "0h 0m"
+                        )}
+
+                    </div>
+
+                </div>
+
+
+                <div class="metric">
+
+                    <div class="metric-title">
+                        Last Application
+                    </div>
+
+                    <div class="metric-value"
+                         style="font-size:16px;">
+
+                        ${escapeHtml(
+                            employee.application
+                            || "Unknown"
+                        )}
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+            <div class="section-title">
+
+                Working Time Progress
+
+            </div>
+
+
+            <div>
+
+                Active:
+
+                ${escapeHtml(
+                    employee.active_time
+                    || "0h 0m"
+                )}
+
+                / 8h
+
+            </div>
+
+
+            <div class="progress-container">
+
+                <div
+                    class="progress-bar"
+                    style="width:${percentage}%">
+
+                </div>
+
+            </div>
+
+
+            <div class="section-title">
+
+                Application Usage
+
+            </div>
+
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Application
+                        </th>
+
+                        <th>
+                            Usage Time
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    ${usageRows}
+
+                </tbody>
+
+            </table>
+
+
+            <div
+                style="
+                    margin-top:15px;
+                    font-size:13px;
+                    color:#6b7280;
+                ">
+
+                Last Sync (IST):
+
+                ${formatIST(
+                    employee.last_sync_ist
+                )}
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+function parseDuration(value) {
+
+    if (!value) {
+
+        return 0;
+
+    }
+
+
+    const match =
+        value.match(
+            /(?:(\d+)h)?\s*(?:(\d+)m)?/
+        );
+
+
+    if (!match) {
+
+        return 0;
+
+    }
+
+
+    const hours =
+        Number(
+            match[1] || 0
+        );
+
+
+    const minutes =
+        Number(
+            match[2] || 0
+        );
+
+
+    return (
+        hours * 60 +
+        minutes
+    );
+
+}
+
+
+function escapeHtml(value) {
+
+    const div =
+        document.createElement(
+            "div"
+        );
+
+    div.textContent =
+        String(
+            value ?? ""
+        );
+
+    return div.innerHTML;
+
+}
+
+
+function formatIST(timestamp) {
+
+    if (!timestamp) {
+
+        return "-";
+
+    }
+
+
+    try {
+
+        return new Date(
+            timestamp
+        ).toLocaleString(
+            "en-IN",
+            {
+                timeZone:
+                    "Asia/Kolkata",
+
+                hour:
+                    "2-digit",
+
+                minute:
+                    "2-digit",
+
+                second:
+                    "2-digit",
+
+                day:
+                    "2-digit",
+
+                month:
+                    "short",
+
+                year:
+                    "numeric"
+            }
+        );
+
+    } catch {
+
+        return timestamp;
+
+    }
+
+}
+
+
+async function loadTeamActivity() {
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/api/team`
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "API request failed"
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        const employees =
+            data.employees || [];
+
+
+        document.getElementById(
+            "totalEmployees"
+        ).textContent =
+            employees.length;
+
+
+        const activeCount =
+            employees.filter(
+                employee =>
+                    employee.status ===
+                    "active"
+            ).length;
+
+
+        document.getElementById(
+            "activeEmployees"
+        ).textContent =
+            activeCount;
+
+
+        const container =
+            document.getElementById(
+                "employeeContainer"
+            );
+
+
+        if (employees.length === 0) {
+
+            container.innerHTML = `
+
+                <div class="empty">
+
+                    No employee activity
+                    available.
+
+                </div>
+
+            `;
+
+        } else {
+
+            container.innerHTML =
+                employees
+                    .map(
+                        createEmployeeCard
+                    )
+                    .join("");
+
+        }
+
+
+        document.getElementById(
+            "lastSync"
+        ).textContent =
+            new Date()
+                .toLocaleTimeString(
+                    "en-IN",
+                    {
+                        timeZone:
+                            "Asia/Kolkata"
+                    }
+                );
+
+
+    } catch (error) {
+
+        console.error(
+            "Dashboard error:",
+            error
+        );
+
+
+        document.getElementById(
+            "employeeContainer"
+        ).innerHTML = `
+
+            <div class="empty">
+
+                Unable to load activity data.
+
+                <br><br>
+
+                Please check the server.
+
+            </div>
 
         `;
 
@@ -313,12 +1059,15 @@ async function loadActivity() {
 
 // Load immediately
 
-loadActivity();
+loadTeamActivity();
 
 
-// Auto refresh every 10 seconds
+// Refresh every 10 seconds
 
-setInterval(loadActivity, 10000);
+setInterval(
+    loadTeamActivity,
+    10000
+);
 
 </script>
 
