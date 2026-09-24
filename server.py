@@ -1416,9 +1416,6 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 
 
-# =========================================================
-# CONFIGURATION
-# =========================================================
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -1431,9 +1428,6 @@ IST = ZoneInfo("Asia/Kolkata")
 OFFLINE_THRESHOLD_SECONDS = 180
 
 
-# =========================================================
-# FIREBASE INITIALIZATION
-# =========================================================
 
 if not firebase_admin._apps:
 
@@ -1494,9 +1488,6 @@ if not firebase_admin._apps:
 db = firestore.client()
 
 
-# =========================================================
-# FASTAPI
-# =========================================================
 
 app = FastAPI(
     title="Team Activity Monitoring Server"
@@ -1511,32 +1502,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-# =========================================================
-# EMPLOYEE DETAILS
-# =========================================================
-
 EMPLOYEE_NAMES = {
 
     "CRFT-IT-260601":
         "Akhila Kethireddy",
 
-    # Add other employees here.
+     "CRFT-IT-260701":
+         "Gandikota Sudheer Kumar",
 
-    # "CRFT-IT-260701":
-    #     "Employee Name",
+     "CRFT-IT-260804":
+         "Kota Srinivasa Reddy",
 
-    # "CRFT-IT-260702":
-    #     "Employee Name",
-
-    # "CRFT-IT-260703":
-    #     "Employee Name",
+     "CRFT-IT-260703":
+         "Pacchikolla Ravi Kiran",
+     "CRFT-IT-260805":
+           "Kavanuru Soundarya"
 }
 
-
-# =========================================================
-# HELPER FUNCTIONS
-# =========================================================
 
 def format_duration(seconds):
 
@@ -1623,9 +1605,6 @@ def add_employee_details(employee):
     return employee
 
 
-# =========================================================
-# HOME
-# =========================================================
 
 @app.get("/")
 def home():
@@ -1652,9 +1631,6 @@ def home():
     }
 
 
-# =========================================================
-# HEALTH
-# =========================================================
 
 @app.get("/health")
 def health():
@@ -1669,9 +1645,6 @@ def health():
     }
 
 
-# =========================================================
-# RECEIVE TRACKER DATA
-# =========================================================
 
 @app.post("/api/activity")
 def receive_activity(data: dict):
@@ -1692,10 +1665,6 @@ def receive_activity(data: dict):
                 "employee_id is required"
         }
 
-
-    # -----------------------------------------------------
-    # TIMESTAMP
-    # -----------------------------------------------------
 
     timestamp = data.get(
         "timestamp"
@@ -1735,10 +1704,6 @@ def receive_activity(data: dict):
         )
     )
 
-
-    # -----------------------------------------------------
-    # ACTIVITY DATA
-    # -----------------------------------------------------
 
     latest_application = data.get(
         "application",
@@ -1789,11 +1754,6 @@ def receive_activity(data: dict):
 
         application_usage = {}
 
-
-    # -----------------------------------------------------
-    # FORMAT DURATIONS
-    # -----------------------------------------------------
-
     session_seconds = max(
         session_seconds,
         0
@@ -1822,11 +1782,6 @@ def receive_activity(data: dict):
         idle_seconds,
         session_seconds
     )
-
-
-    # -----------------------------------------------------
-    # LATEST ACTIVITY
-    # -----------------------------------------------------
 
     latest_activity = {
 
@@ -1890,10 +1845,6 @@ def receive_activity(data: dict):
         latest_activity
     )
 
-
-    # -----------------------------------------------------
-    # DAILY ACTIVITY
-    # -----------------------------------------------------
 
     daily_document_id = (
         f"{employee_id}_{activity_date}"
@@ -1969,11 +1920,6 @@ def receive_activity(data: dict):
         merge=True
     )
 
-
-    # -----------------------------------------------------
-    # ACTIVITY LOG
-    # -----------------------------------------------------
-
     log_data = {
 
         "employee_id":
@@ -2046,11 +1992,6 @@ def receive_activity(data: dict):
         "message":
             "Activity saved successfully"
     }
-
-
-# =========================================================
-# LIVE TEAM DATA
-# =========================================================
 
 @app.get("/api/team")
 def get_team_activity():
@@ -2200,10 +2141,6 @@ def get_team_activity():
     }
 
 
-# =========================================================
-# DAILY TEAM DATA
-# =========================================================
-
 @app.get("/api/team/daily")
 def get_daily_team_activity(
 
@@ -2296,10 +2233,6 @@ def get_daily_team_activity(
     }
 
 
-# =========================================================
-# INDIVIDUAL EMPLOYEE
-# =========================================================
-
 @app.get(
     "/api/employee/{employee_id}"
 )
@@ -2369,10 +2302,6 @@ def get_employee_activity(
             employee_data
     }
 
-
-# =========================================================
-# RUN LOCALLY
-# =========================================================
 
 if __name__ == "__main__":
 
