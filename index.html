@@ -1109,7 +1109,6 @@ setInterval(
 </html> -->
 
 <!DOCTYPE html>
-
 <html lang="en">
 
 <head>
@@ -1121,16 +1120,13 @@ setInterval(
 
 <title>Team Activity Dashboard</title>
 
-
 <style>
 
 * {
     box-sizing: border-box;
 }
 
-
 body {
-
     margin: 0;
 
     font-family:
@@ -1148,21 +1144,15 @@ body {
     color: #1e293b;
 }
 
-
 .container {
-
     max-width: 1400px;
-
     margin: auto;
-
     padding: 25px;
 }
-
 
 /* HEADER */
 
 .header {
-
     background: white;
 
     border-radius: 15px;
@@ -1176,9 +1166,7 @@ body {
         rgba(0,0,0,0.08);
 }
 
-
 .title {
-
     margin: 0;
 
     font-size: 30px;
@@ -1186,9 +1174,7 @@ body {
     font-weight: 700;
 }
 
-
 .subtitle {
-
     margin-top: 8px;
 
     color: #64748b;
@@ -1196,9 +1182,7 @@ body {
     font-size: 15px;
 }
 
-
 .refresh-info {
-
     margin-top: 12px;
 
     font-size: 13px;
@@ -1206,9 +1190,7 @@ body {
     color: #64748b;
 }
 
-
 .connection {
-
     margin-top: 8px;
 
     color: #16a34a;
@@ -1216,11 +1198,9 @@ body {
     font-weight: 600;
 }
 
-
 /* DATE SECTION */
 
 .date-section {
-
     background: white;
 
     border-radius: 15px;
@@ -1242,15 +1222,11 @@ body {
     flex-wrap: wrap;
 }
 
-
 .date-section label {
-
     font-weight: 600;
 }
 
-
 .date-section input {
-
     padding: 10px 14px;
 
     border: 1px solid #cbd5e1;
@@ -1262,9 +1238,7 @@ body {
     cursor: pointer;
 }
 
-
 .today-btn {
-
     border: none;
 
     background: #2563eb;
@@ -1280,15 +1254,11 @@ body {
     font-weight: 600;
 }
 
-
 .today-btn:hover {
-
     background: #1d4ed8;
 }
 
-
 .selected-date {
-
     color: #475569;
 
     font-size: 14px;
@@ -1296,11 +1266,9 @@ body {
     font-weight: 600;
 }
 
-
 /* ERROR */
 
 .error-box {
-
     display: none;
 
     background: #fee2e2;
@@ -1316,11 +1284,9 @@ body {
     font-weight: 600;
 }
 
-
 /* SUMMARY */
 
 .summary {
-
     display: grid;
 
     grid-template-columns:
@@ -1331,9 +1297,7 @@ body {
     margin-bottom: 25px;
 }
 
-
 .summary-card {
-
     background: white;
 
     padding: 22px;
@@ -1345,17 +1309,13 @@ body {
         rgba(0,0,0,0.08);
 }
 
-
 .summary-label {
-
     color: #64748b;
 
     font-size: 14px;
 }
 
-
 .summary-value {
-
     margin-top: 8px;
 
     font-size: 30px;
@@ -1363,11 +1323,9 @@ body {
     font-weight: 700;
 }
 
-
 /* EMPLOYEE GRID */
 
 .employee-grid {
-
     display: grid;
 
     grid-template-columns:
@@ -1376,9 +1334,7 @@ body {
     gap: 20px;
 }
 
-
 .employee-card {
-
     background: white;
 
     border-radius: 15px;
@@ -1390,15 +1346,11 @@ body {
         rgba(0,0,0,0.08);
 }
 
-
 .employee-card.offline {
-
     opacity: 0.75;
 }
 
-
 .employee-header {
-
     display: flex;
 
     justify-content:
@@ -1411,9 +1363,7 @@ body {
     margin-bottom: 20px;
 }
 
-
 .employee-name {
-
     font-size: 19px;
 
     font-weight: 700;
@@ -1421,17 +1371,13 @@ body {
     margin-bottom: 5px;
 }
 
-
 .employee-id {
-
     color: #64748b;
 
     font-size: 13px;
 }
 
-
 .status {
-
     padding: 6px 12px;
 
     border-radius: 20px;
@@ -1441,36 +1387,28 @@ body {
     font-weight: 700;
 }
 
-
 .status.active {
-
     background: #dcfce7;
 
     color: #166534;
 }
 
-
 .status.offline {
-
     background: #fee2e2;
 
     color: #991b1b;
 }
 
-
 /* DETAILS */
 
 .details {
-
     border-top:
         1px solid #e2e8f0;
 
     padding-top: 15px;
 }
 
-
 .detail-row {
-
     display: grid;
 
     grid-template-columns:
@@ -1481,27 +1419,21 @@ body {
     padding: 8px 0;
 }
 
-
 .detail-label {
-
     color: #64748b;
 
     font-size: 14px;
 }
 
-
 .detail-value {
-
     font-weight: 600;
 
     font-size: 14px;
 }
 
-
 /* APPLICATION USAGE */
 
 .usage-title {
-
     margin-top: 20px;
 
     margin-bottom: 10px;
@@ -1511,18 +1443,14 @@ body {
     font-weight: 700;
 }
 
-
 .usage-table {
-
     width: 100%;
 
     border-collapse:
         collapse;
 }
 
-
 .usage-table th {
-
     text-align: left;
 
     padding: 10px;
@@ -1532,9 +1460,7 @@ body {
     font-size: 13px;
 }
 
-
 .usage-table td {
-
     padding: 10px;
 
     border-bottom:
@@ -1543,9 +1469,7 @@ body {
     font-size: 13px;
 }
 
-
 .no-data {
-
     text-align: center;
 
     padding: 30px;
@@ -1557,27 +1481,21 @@ body {
     border-radius: 15px;
 }
 
-
 /* RESPONSIVE */
 
 @media (max-width: 900px) {
 
     .summary {
-
         grid-template-columns:
             1fr;
     }
-
 
     .employee-grid {
-
         grid-template-columns:
             1fr;
     }
 
-
     .detail-row {
-
         grid-template-columns:
             1fr;
     }
@@ -1591,9 +1509,7 @@ body {
 
 <body>
 
-
 <div class="container">
-
 
     <!-- HEADER -->
 
@@ -1608,13 +1524,20 @@ body {
         </div>
 
         <div class="refresh-info">
+
             Dashboard refreshes automatically every 1 minute.
+
             Last dashboard refresh:
-            <span id="lastRefresh">-</span>
+
+            <span id="lastRefresh">
+                -
+            </span>
+
         </div>
 
-        <div class="connection"
-             id="connectionStatus">
+        <div
+            class="connection"
+            id="connectionStatus">
 
             ● Connected
 
@@ -1668,7 +1591,6 @@ body {
 
     <div class="summary">
 
-
         <div class="summary-card">
 
             <div class="summary-label">
@@ -1719,7 +1641,6 @@ body {
 
         </div>
 
-
     </div>
 
 
@@ -1731,29 +1652,29 @@ body {
 
     </div>
 
-
 </div>
 
 
 <script>
 
-
-// =====================================================
-// CONFIGURATION
-// =====================================================
+/* =====================================================
+   CONFIGURATION
+===================================================== */
 
 const API_URL = "/api/team";
 
-const DAILY_API_URL = "/api/team/daily";
+const DAILY_API_URL =
+    "/api/team/daily";
 
 
-// =====================================================
-// DATE HELPERS
-// =====================================================
+/* =====================================================
+   DATE HELPERS
+===================================================== */
 
 function getTodayDate() {
 
-    const now = new Date();
+    const now =
+        new Date();
 
     const year =
         now.getFullYear();
@@ -1772,7 +1693,9 @@ function getTodayDate() {
 }
 
 
-function formatSelectedDate(dateString) {
+function formatSelectedDate(
+    dateString
+) {
 
     if (!dateString) {
         return "-";
@@ -1789,15 +1712,14 @@ function formatSelectedDate(dateString) {
 }
 
 
-// =====================================================
-// DATE PICKER
-// =====================================================
+/* =====================================================
+   DATE PICKER
+===================================================== */
 
 const datePicker =
     document.getElementById(
         "datePicker"
     );
-
 
 datePicker.value =
     getTodayDate();
@@ -1815,9 +1737,9 @@ datePicker.addEventListener(
 );
 
 
-// =====================================================
-// DATE DATA
-// =====================================================
+/* =====================================================
+   DATE DATA
+===================================================== */
 
 async function loadSelectedDate(
     selectedDate
@@ -1827,7 +1749,6 @@ async function loadSelectedDate(
         return;
     }
 
-
     document.getElementById(
         "selectedDateText"
     ).textContent =
@@ -1836,14 +1757,6 @@ async function loadSelectedDate(
             selectedDate
         );
 
-
-    /*
-        If today's date is selected,
-        use live /api/team data.
-
-        For previous dates, use
-        /api/team/daily?date=YYYY-MM-DD
-    */
 
     if (
         selectedDate ===
@@ -1863,9 +1776,9 @@ async function loadSelectedDate(
 }
 
 
-// =====================================================
-// TODAY BUTTON
-// =====================================================
+/* =====================================================
+   TODAY
+===================================================== */
 
 function loadToday() {
 
@@ -1882,14 +1795,13 @@ function loadToday() {
 }
 
 
-// =====================================================
-// LIVE TEAM DATA
-// =====================================================
+/* =====================================================
+   LIVE TEAM DATA
+===================================================== */
 
 async function loadLiveTeamData() {
 
     hideError();
-
 
     try {
 
@@ -1951,16 +1863,15 @@ async function loadLiveTeamData() {
 }
 
 
-// =====================================================
-// PREVIOUS DATE DATA
-// =====================================================
+/* =====================================================
+   PREVIOUS DATE DATA
+===================================================== */
 
 async function loadDailyTeamData(
     selectedDate
 ) {
 
     hideError();
-
 
     try {
 
@@ -2030,9 +1941,9 @@ async function loadDailyTeamData(
 }
 
 
-// =====================================================
-// SUMMARY
-// =====================================================
+/* =====================================================
+   SUMMARY
+===================================================== */
 
 function updateSummary(
     employees
@@ -2040,7 +1951,6 @@ function updateSummary(
 
     const total =
         employees.length;
-
 
     let active = 0;
 
@@ -2085,9 +1995,9 @@ function updateSummary(
 }
 
 
-// =====================================================
-// RENDER EMPLOYEES
-// =====================================================
+/* =====================================================
+   RENDER EMPLOYEES
+===================================================== */
 
 function renderEmployees(
     employees,
@@ -2120,7 +2030,7 @@ function renderEmployees(
     }
 
 
-    // Active employees first.
+    /* Active employees first */
 
     employees.sort(
         (a, b) => {
@@ -2152,6 +2062,8 @@ function renderEmployees(
                 );
 
 
+            /* STATUS */
+
             const status =
                 employee.status ===
                 "active"
@@ -2169,6 +2081,8 @@ function renderEmployees(
                 `employee-card ${status}`;
 
 
+            /* EMPLOYEE NAME */
+
             const employeeName =
                 escapeHTML(
                     employee.employee_name ||
@@ -2176,12 +2090,16 @@ function renderEmployees(
                 );
 
 
+            /* EMPLOYEE ID */
+
             const employeeId =
                 escapeHTML(
                     employee.employee_id ||
                     "-"
                 );
 
+
+            /* CURRENT APPLICATION */
 
             const application =
                 escapeHTML(
@@ -2191,12 +2109,30 @@ function renderEmployees(
                 );
 
 
+            /* ACTIVE TIME */
+
             const activeTime =
                 escapeHTML(
                     employee.active_time ||
-                    "0h 0m"
+                    formatDuration(
+                        employee.active_seconds
+                    )
                 );
 
+
+            /* IDLE / AFK TIME */
+
+            const idleTime =
+                employee.idle_time
+                    ? escapeHTML(
+                        employee.idle_time
+                    )
+                    : formatDuration(
+                        employee.idle_seconds
+                    );
+
+
+            /* LAST SYNC */
 
             const timestamp =
                 employee.last_sync_ist ||
@@ -2209,6 +2145,8 @@ function renderEmployees(
                     timestamp
                 );
 
+
+            /* APPLICATION USAGE */
 
             const usage =
                 employee.application_usage ||
@@ -2238,10 +2176,13 @@ function renderEmployees(
 
             } else {
 
+
+                /* Sort using numeric OR formatted values */
+
                 usageEntries.sort(
                     (a, b) =>
-                        Number(b[1]) -
-                        Number(a[1])
+                        durationToSeconds(b[1]) -
+                        durationToSeconds(a[1])
                 );
 
 
@@ -2267,6 +2208,8 @@ function renderEmployees(
 
             }
 
+
+            /* CARD HTML */
 
             card.innerHTML = `
 
@@ -2317,6 +2260,21 @@ function renderEmployees(
 
                         <div class="detail-value">
                             ${activeTime}
+                        </div>
+
+                    </div>
+
+
+                    <!-- IDLE / AFK TIME -->
+
+                    <div class="detail-row">
+
+                        <div class="detail-label">
+                            Idle / AFK Time
+                        </div>
+
+                        <div class="detail-value">
+                            ${idleTime}
                         </div>
 
                     </div>
@@ -2404,9 +2362,107 @@ function renderEmployees(
 }
 
 
-// =====================================================
-// FORMAT DATE/TIME
-// =====================================================
+/* =====================================================
+   CONVERT DURATION TO SECONDS
+===================================================== */
+
+function durationToSeconds(
+    value
+) {
+
+    /* Numeric seconds */
+
+    if (
+        typeof value ===
+        "number"
+    ) {
+
+        return value;
+
+    }
+
+
+    if (!value) {
+
+        return 0;
+
+    }
+
+
+    const text =
+        String(value).trim();
+
+
+    /*
+       Supports:
+       "2h 30m"
+       "2h"
+       "30m"
+    */
+
+    const fullMatch =
+        text.match(
+            /^(\d+)\s*h\s*(\d+)\s*m$/i
+        );
+
+
+    if (fullMatch) {
+
+        return (
+            Number(fullMatch[1]) * 3600 +
+            Number(fullMatch[2]) * 60
+        );
+
+    }
+
+
+    const hourMatch =
+        text.match(
+            /^(\d+)\s*h$/i
+        );
+
+
+    if (hourMatch) {
+
+        return (
+            Number(hourMatch[1]) * 3600
+        );
+
+    }
+
+
+    const minuteMatch =
+        text.match(
+            /^(\d+)\s*m$/i
+        );
+
+
+    if (minuteMatch) {
+
+        return (
+            Number(minuteMatch[1]) * 60
+        );
+
+    }
+
+
+    /* Numeric string */
+
+    if (!isNaN(Number(text))) {
+
+        return Number(text);
+
+    }
+
+
+    return 0;
+
+}
+
+
+/* =====================================================
+   FORMAT DATE/TIME
+===================================================== */
 
 function formatDateTime(
     timestamp
@@ -2440,12 +2496,19 @@ function formatDateTime(
             "en-IN",
             {
                 day: "2-digit",
+
                 month: "2-digit",
+
                 year: "numeric",
+
                 hour: "2-digit",
+
                 minute: "2-digit",
+
                 second: "2-digit",
+
                 hour12: true,
+
                 timeZone:
                     "Asia/Kolkata"
             }
@@ -2460,16 +2523,18 @@ function formatDateTime(
 }
 
 
-// =====================================================
-// FORMAT DURATION
-// =====================================================
+/* =====================================================
+   FORMAT DURATION
+===================================================== */
 
 function formatDuration(
-    seconds
+    value
 ) {
 
-    seconds =
-        Number(seconds) || 0;
+    const seconds =
+        durationToSeconds(
+            value
+        );
 
 
     const hours =
@@ -2489,31 +2554,36 @@ function formatDuration(
 }
 
 
-// =====================================================
-// ESCAPE HTML
-// =====================================================
+/* =====================================================
+   ESCAPE HTML
+===================================================== */
 
 function escapeHTML(
     value
 ) {
 
     return String(value)
+
         .replace(
             /&/g,
             "&amp;"
         )
+
         .replace(
             /</g,
             "&lt;"
         )
+
         .replace(
             />/g,
             "&gt;"
         )
+
         .replace(
             /"/g,
             "&quot;"
         )
+
         .replace(
             /'/g,
             "&#039;"
@@ -2522,9 +2592,9 @@ function escapeHTML(
 }
 
 
-// =====================================================
-// ERROR HANDLING
-// =====================================================
+/* =====================================================
+   ERROR HANDLING
+===================================================== */
 
 function showError(
     message
@@ -2584,9 +2654,9 @@ function hideError() {
 }
 
 
-// =====================================================
-// REFRESH TIME
-// =====================================================
+/* =====================================================
+   REFRESH TIME
+===================================================== */
 
 function updateRefreshTime() {
 
@@ -2597,8 +2667,11 @@ function updateRefreshTime() {
             "en-IN",
             {
                 hour: "2-digit",
+
                 minute: "2-digit",
+
                 second: "2-digit",
+
                 hour12: true
             }
         );
@@ -2606,18 +2679,18 @@ function updateRefreshTime() {
 }
 
 
-// =====================================================
-// INITIAL LOAD
-// =====================================================
+/* =====================================================
+   INITIAL LOAD
+===================================================== */
 
 loadSelectedDate(
     getTodayDate()
 );
 
 
-// =====================================================
-// AUTO REFRESH
-// =====================================================
+/* =====================================================
+   AUTO REFRESH - 1 MINUTE
+===================================================== */
 
 setInterval(
     function () {
@@ -2646,7 +2719,6 @@ setInterval(
 );
 
 </script>
-
 
 </body>
 
