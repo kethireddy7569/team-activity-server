@@ -372,10 +372,6 @@ body {
 }
 
 
-/* =====================================================
-   BROWSER HISTORY - ONLY NEW ADDITION
-===================================================== */
-
 .browser-history-title {
     margin-top: 20px;
 
@@ -640,9 +636,6 @@ body {
 
 <script>
 
-/* =====================================================
-   CONFIGURATION
-===================================================== */
 
 const API_URL = "/api/team";
 
@@ -650,9 +643,6 @@ const DAILY_API_URL =
     "/api/team/daily";
 
 
-/* =====================================================
-   DATE HELPERS
-===================================================== */
 
 function getTodayDate() {
 
@@ -695,9 +685,7 @@ function formatSelectedDate(
 }
 
 
-/* =====================================================
-   DATE PICKER
-===================================================== */
+
 
 const datePicker =
     document.getElementById(
@@ -720,9 +708,7 @@ datePicker.addEventListener(
 );
 
 
-/* =====================================================
-   DATE DATA
-===================================================== */
+
 
 async function loadSelectedDate(
     selectedDate
@@ -759,10 +745,6 @@ async function loadSelectedDate(
 }
 
 
-/* =====================================================
-   TODAY
-===================================================== */
-
 function loadToday() {
 
     const today =
@@ -777,10 +759,6 @@ function loadToday() {
 
 }
 
-
-/* =====================================================
-   LIVE TEAM DATA
-===================================================== */
 
 async function loadLiveTeamData() {
 
@@ -846,9 +824,6 @@ async function loadLiveTeamData() {
 }
 
 
-/* =====================================================
-   PREVIOUS DATE DATA
-===================================================== */
 
 async function loadDailyTeamData(
     selectedDate
@@ -924,10 +899,6 @@ async function loadDailyTeamData(
 }
 
 
-/* =====================================================
-   SUMMARY
-===================================================== */
-
 function updateSummary(
     employees
 ) {
@@ -978,9 +949,6 @@ function updateSummary(
 }
 
 
-/* =====================================================
-   RENDER EMPLOYEES
-===================================================== */
 
 function renderEmployees(
     employees,
@@ -1475,15 +1443,11 @@ async function loadBrowserHistory(
                         </div>
 
 
-                        <div
-                            class="browser-history-url"
-                        >
-
-                            ${escapeHTML(
-                                url
-                            )}
-
-                        </div>
+                        <div class="browser-history-page-title">
+    ${escapeHTML(
+        title
+    )}
+</div>
 
 
                         <div
