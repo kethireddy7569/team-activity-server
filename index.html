@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Team Activity Dashboard</title>
 
     <style>
+
         * {
             box-sizing: border-box;
         }
@@ -63,6 +65,8 @@
             margin-bottom: 20px;
         }
 
+        /* DATE SELECTOR */
+
         .date-section {
             background: white;
             padding: 15px 20px;
@@ -81,6 +85,8 @@
             border: 1px solid #d1d5db;
             border-radius: 7px;
         }
+
+        /* SUMMARY */
 
         .summary {
             display: grid;
@@ -106,6 +112,8 @@
             font-weight: bold;
             margin-top: 8px;
         }
+
+        /* EMPLOYEE GRID */
 
         .employee-grid {
             display: grid;
@@ -159,6 +167,8 @@
             color: #991b1b;
         }
 
+        /* DETAILS */
+
         .details {
             border-top: 1px solid #e5e7eb;
             padding-top: 12px;
@@ -180,6 +190,8 @@
             text-align: right;
         }
 
+        /* SECTION TITLE */
+
         .section-title {
             font-size: 16px;
             font-weight: bold;
@@ -187,56 +199,60 @@
             margin-bottom: 10px;
         }
 
-        .usage-table,
-        .history-table {
+        /* APPLICATION TABLE */
+
+        .usage-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 13px;
         }
 
         .usage-table th,
-        .usage-table td,
-        .history-table th,
-        .history-table td {
+        .usage-table td {
             padding: 8px;
             border-bottom: 1px solid #e5e7eb;
             text-align: left;
         }
 
-        .usage-table th,
-        .history-table th {
+        .usage-table th {
             background: #f8fafc;
         }
 
-        .history-table {
-            table-layout: fixed;
+        /* BROWSER HISTORY */
+
+        .history-container {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #ffffff;
         }
 
-        .history-table th:nth-child(1) {
-            width: 25%;
+        .history-item {
+            padding: 10px;
+            border-bottom: 1px solid #e5e7eb;
         }
 
-        .history-table th:nth-child(2) {
-            width: 55%;
-        }
-
-        .history-table th:nth-child(3) {
-            width: 20%;
-        }
-
-        .history-url {
-            word-break: break-all;
-            color: #2563eb;
+        .history-item:last-child {
+            border-bottom: none;
         }
 
         .history-title {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 5px;
             word-break: break-word;
         }
 
-        .no-data {
-            text-align: center;
-            color: #9ca3af;
-            padding: 15px;
+        .history-url {
+            color: #2563eb;
+            font-size: 13px;
+            word-break: break-all;
+            margin-bottom: 5px;
+        }
+
+        .history-time {
+            color: #6b7280;
+            font-size: 12px;
         }
 
         .history-loading {
@@ -245,7 +261,16 @@
             padding: 10px 0;
         }
 
+        .no-data {
+            text-align: center;
+            color: #9ca3af;
+            padding: 15px;
+        }
+
+        /* RESPONSIVE */
+
         @media (max-width: 900px) {
+
             .summary {
                 grid-template-columns: 1fr;
             }
@@ -253,7 +278,9 @@
             .employee-grid {
                 grid-template-columns: 1fr;
             }
+
         }
+
     </style>
 </head>
 
@@ -261,8 +288,13 @@
 
 <div class="container">
 
+    <!-- HEADER -->
+
     <div class="header">
-        <div class="title">Team Activity Dashboard</div>
+
+        <div class="title">
+            Team Activity Dashboard
+        </div>
 
         <div class="subtitle">
             Application Activity Tracking & Centralized Monitoring
@@ -277,55 +309,114 @@
         <div class="connection" id="connection">
             ● Connected
         </div>
+
     </div>
+
+
+    <!-- ERROR -->
 
     <div class="error-box" id="errorBox"></div>
 
+
     <!-- DATE SELECTOR -->
+
     <div class="date-section">
-        <label for="datePicker">Select Date:</label>
-        <input type="date" id="datePicker">
+
+        <label for="datePicker">
+            Select Date:
+        </label>
+
+        <input
+            type="date"
+            id="datePicker"
+        >
+
     </div>
 
+
     <!-- SUMMARY -->
+
     <div class="summary">
 
         <div class="summary-card">
-            <div class="summary-title">Total Employees</div>
-            <div class="summary-value" id="totalEmployees">0</div>
+
+            <div class="summary-title">
+                Total Employees
+            </div>
+
+            <div
+                class="summary-value"
+                id="totalEmployees"
+            >
+                0
+            </div>
+
         </div>
 
-        <div class="summary-card">
-            <div class="summary-title">Active Employees</div>
-            <div class="summary-value" id="activeEmployees">0</div>
-        </div>
 
         <div class="summary-card">
-            <div class="summary-title">Offline Employees</div>
-            <div class="summary-value" id="offlineEmployees">0</div>
+
+            <div class="summary-title">
+                Active Employees
+            </div>
+
+            <div
+                class="summary-value"
+                id="activeEmployees"
+            >
+                0
+            </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="summary-title">
+                Offline Employees
+            </div>
+
+            <div
+                class="summary-value"
+                id="offlineEmployees"
+            >
+                0
+            </div>
+
         </div>
 
     </div>
 
-    <!-- EMPLOYEE CARDS -->
-    <div class="employee-grid" id="employeeGrid">
+
+    <!-- EMPLOYEE GRID -->
+
+    <div
+        class="employee-grid"
+        id="employeeGrid"
+    >
+
         <div class="no-data">
             Loading team data...
         </div>
+
     </div>
 
 </div>
 
+
 <script>
 
 const LIVE_API = "/api/team";
+
 const DAILY_API = "/api/team/daily";
-const BROWSER_HISTORY_API = "/api/browser-history";
+
+const BROWSER_HISTORY_API =
+    "/api/browser-history";
 
 
-// --------------------------------------------------
+// ==================================================
 // FORMAT DATE/TIME
-// --------------------------------------------------
+// ==================================================
 
 function formatDateTime(timestamp) {
 
@@ -338,42 +429,38 @@ function formatDateTime(timestamp) {
         const date = new Date(timestamp);
 
         return date.toLocaleString("en-IN", {
+
             day: "2-digit",
             month: "2-digit",
             year: "numeric",
+
             hour: "2-digit",
             minute: "2-digit",
             second: "2-digit",
+
             hour12: true
+
         });
 
     } catch (error) {
+
         return timestamp;
+
     }
+
 }
 
 
-// --------------------------------------------------
-// FORMAT HISTORY TIME
-// --------------------------------------------------
-
-function formatHistoryTime(timestamp) {
-
-    if (!timestamp) {
-        return "-";
-    }
-
-    return formatDateTime(timestamp);
-}
-
-
-// --------------------------------------------------
-// DURATION CONVERTER
-// --------------------------------------------------
+// ==================================================
+// DURATION TO SECONDS
+// ==================================================
 
 function durationToSeconds(value) {
 
-    if (value === null || value === undefined) {
+    if (
+        value === null ||
+        value === undefined
+    ) {
         return 0;
     }
 
@@ -381,7 +468,8 @@ function durationToSeconds(value) {
         return value;
     }
 
-    const text = String(value).trim();
+    const text =
+        String(value).trim();
 
     if (!text) {
         return 0;
@@ -389,394 +477,666 @@ function durationToSeconds(value) {
 
     let seconds = 0;
 
-    const hours = text.match(/(\d+)\s*h/i);
-    const minutes = text.match(/(\d+)\s*m/i);
-    const secs = text.match(/(\d+)\s*s/i);
+    const hours =
+        text.match(/(\d+)\s*h/i);
+
+    const minutes =
+        text.match(/(\d+)\s*m/i);
+
+    const secs =
+        text.match(/(\d+)\s*s/i);
+
 
     if (hours) {
-        seconds += parseInt(hours[1]) * 3600;
+
+        seconds +=
+            parseInt(hours[1]) * 3600;
+
     }
+
 
     if (minutes) {
-        seconds += parseInt(minutes[1]) * 60;
+
+        seconds +=
+            parseInt(minutes[1]) * 60;
+
     }
+
 
     if (secs) {
-        seconds += parseInt(secs[1]);
+
+        seconds +=
+            parseInt(secs[1]);
+
     }
 
-    if (!hours && !minutes && !secs) {
-        const numeric = Number(text);
+
+    if (
+        !hours &&
+        !minutes &&
+        !secs
+    ) {
+
+        const numeric =
+            Number(text);
 
         if (!isNaN(numeric)) {
             return numeric;
         }
+
     }
+
 
     return seconds;
+
 }
 
 
-// --------------------------------------------------
-// ESCAPE HTML
-// --------------------------------------------------
-
-function escapeHTML(value) {
-
-    if (value === null || value === undefined) {
-        return "";
-    }
-
-    return String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-}
-
-
-// --------------------------------------------------
-// LOAD TEAM DATA
-// --------------------------------------------------
-
-async function loadTeamData() {
-
-    const selectedDate =
-        document.getElementById("datePicker").value;
-
-    let url = LIVE_API;
-
-    if (selectedDate) {
-        url = `${DAILY_API}?date=${encodeURIComponent(selectedDate)}`;
-    }
-
-    try {
-
-        const response = await fetch(url);
-
-        if (!response.ok) {
-            throw new Error(
-                `Server returned ${response.status}`
-            );
-        }
-
-        const data = await response.json();
-
-        if (data.status !== "success") {
-            throw new Error(
-                data.message || "Failed to load team data"
-            );
-        }
-
-        document.getElementById("errorBox").style.display = "none";
-
-        document.getElementById("totalEmployees").textContent =
-            data.total_employees ?? data.count ?? 0;
-
-        document.getElementById("activeEmployees").textContent =
-            data.active_employees ?? 0;
-
-        document.getElementById("offlineEmployees").textContent =
-            data.offline_employees ?? 0;
-
-        renderEmployees(data.employees || []);
-
-        document.getElementById("lastRefresh").textContent =
-            formatDateTime(new Date().toISOString());
-
-        document.getElementById("connection").textContent =
-            "● Connected";
-
-    } catch (error) {
-
-        console.error(error);
-
-        const errorBox =
-            document.getElementById("errorBox");
-
-        errorBox.style.display = "block";
-
-        errorBox.textContent =
-            "Unable to load team data: " + error.message;
-
-        document.getElementById("connection").textContent =
-            "● Connection Error";
-
-    }
-}
-
-
-// --------------------------------------------------
-// RENDER EMPLOYEES
-// --------------------------------------------------
-
-function renderEmployees(employees) {
-
-    const grid =
-        document.getElementById("employeeGrid");
-
-    grid.innerHTML = "";
-
-    if (!employees.length) {
-
-        grid.innerHTML = `
-            <div class="no-data">
-                No data available for selected date.
-            </div>
-        `;
-
-        return;
-    }
-
-    employees.sort((a, b) => {
-
-        if (a.status === "active" &&
-            b.status !== "active") {
-            return -1;
-        }
-
-        if (a.status !== "active" &&
-            b.status === "active") {
-            return 1;
-        }
-
-        return 0;
-    });
-
-
-    employees.forEach(employee => {
-
-        const employeeId =
-            employee.employee_id || "-";
-
-        const employeeName =
-            employee.employee_name ||
-            "Employee Name Not Configured";
-
-        const isActive =
-            employee.status === "active";
-
-        const application =
-            employee.application || "Unknown";
-
-        const activeTime =
-            employee.active_time || "0h 0m";
-
-        const idleTime =
-            employee.idle_time ||
-            employee.afk_time ||
-            "0h 0m";
-
-        const usage =
-            employee.application_usage || {};
-
-        let usageHTML = "";
-
-        const usageEntries =
-            Object.entries(usage);
-
-        if (usageEntries.length === 0) {
-
-            usageHTML = `
-                <tr>
-                    <td colspan="2" class="no-data">
-                        No application usage available
-                    </td>
-                </tr>
-            `;
-
-        } else {
-
-            usageEntries.sort((a, b) => {
-
-                return durationToSeconds(b[1]) -
-                       durationToSeconds(a[1]);
-
-            });
-
-            usageEntries.forEach(([app, time]) => {
-
-                usageHTML += `
-                    <tr>
-                        <td>${escapeHTML(app)}</td>
-                        <td>
-                            ${escapeHTML(
-                                typeof time === "number"
-                                ? formatSeconds(time)
-                                : time
-                            )}
-                        </td>
-                    </tr>
-                `;
-
-            });
-        }
-
-
-        const card =
-            document.createElement("div");
-
-        card.className =
-            "employee-card" +
-            (isActive ? "" : " offline");
-
-
-        card.innerHTML = `
-
-            <div class="employee-header">
-
-                <div>
-
-                    <div class="employee-id">
-                        ${escapeHTML(employeeId)}
-                    </div>
-
-                    <div class="employee-name">
-                        ${escapeHTML(employeeName)}
-                    </div>
-
-                </div>
-
-                <div class="status ${isActive ? "active" : "offline"}">
-                    ${isActive ? "Active" : "Offline"}
-                </div>
-
-            </div>
-
-
-            <div class="details">
-
-                <div class="detail-row">
-                    <span class="detail-label">
-                        Current Application
-                    </span>
-
-                    <span class="detail-value">
-                        ${escapeHTML(application)}
-                    </span>
-                </div>
-
-
-                <div class="detail-row">
-                    <span class="detail-label">
-                        Observed Active Time
-                    </span>
-
-                    <span class="detail-value">
-                        ${escapeHTML(activeTime)}
-                    </span>
-                </div>
-
-
-                <div class="detail-row">
-                    <span class="detail-label">
-                        Idle / AFK Time
-                    </span>
-
-                    <span class="detail-value">
-                        ${escapeHTML(idleTime)}
-                    </span>
-                </div>
-
-
-                <div class="detail-row">
-                    <span class="detail-label">
-                        Last Sync
-                    </span>
-
-                    <span class="detail-value">
-                        ${formatDateTime(employee.timestamp)}
-                    </span>
-                </div>
-
-            </div>
-
-
-            <!-- APPLICATION USAGE -->
-
-            <div class="section-title">
-                Application Usage
-            </div>
-
-            <table class="usage-table">
-
-                <thead>
-                    <tr>
-                        <th>Application</th>
-                        <th>Time Used</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    ${usageHTML}
-                </tbody>
-
-            </table>
-
-
-            <!-- BROWSER HISTORY -->
-
-            <div class="section-title">
-                Browser History
-            </div>
-
-            <div id="history-${escapeHTML(employeeId)}"
-                 class="history-loading">
-
-                Loading browser history...
-
-            </div>
-
-        `;
-
-
-        grid.appendChild(card);
-
-        loadBrowserHistory(
-            employeeId,
-            `history-${employeeId}`
-        );
-
-    });
-}
-
-
-// --------------------------------------------------
+// ==================================================
 // FORMAT SECONDS
-// --------------------------------------------------
+// ==================================================
 
 function formatSeconds(seconds) {
 
-    seconds = Math.max(
-        0,
-        Math.floor(Number(seconds) || 0)
-    );
+    seconds =
+        Math.max(
+            0,
+            Math.floor(
+                Number(seconds) || 0
+            )
+        );
+
 
     const hours =
         Math.floor(seconds / 3600);
 
     const minutes =
-        Math.floor((seconds % 3600) / 60);
+        Math.floor(
+            (seconds % 3600) / 60
+        );
 
     const secs =
         seconds % 60;
 
+
     if (hours > 0) {
+
         return `${hours}h ${minutes}m`;
+
     }
+
 
     if (minutes > 0) {
+
         return `${minutes}m ${secs}s`;
+
     }
 
+
     return `${secs}s`;
+
 }
 
 
-// --------------------------------------------------
+// ==================================================
+// ESCAPE HTML
+// ==================================================
+
+function escapeHTML(value) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+        return "";
+    }
+
+    return String(value)
+
+        .replace(/&/g, "&amp;")
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+// ==================================================
+// LOAD TEAM DATA
+// ==================================================
+
+async function loadTeamData() {
+
+    const selectedDate =
+        document.getElementById(
+            "datePicker"
+        ).value;
+
+
+    let url =
+        LIVE_API;
+
+
+    if (selectedDate) {
+
+        url =
+            `${DAILY_API}?date=${encodeURIComponent(selectedDate)}`;
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch(url);
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                `Server returned ${response.status}`
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            data.status !==
+            "success"
+        ) {
+
+            throw new Error(
+                data.message ||
+                "Failed to load team data"
+            );
+
+        }
+
+
+        document.getElementById(
+            "errorBox"
+        ).style.display =
+            "none";
+
+
+        document.getElementById(
+            "totalEmployees"
+        ).textContent =
+            data.total_employees ??
+            data.count ??
+            0;
+
+
+        document.getElementById(
+            "activeEmployees"
+        ).textContent =
+            data.active_employees ??
+            0;
+
+
+        document.getElementById(
+            "offlineEmployees"
+        ).textContent =
+            data.offline_employees ??
+            0;
+
+
+        renderEmployees(
+            data.employees || []
+        );
+
+
+        document.getElementById(
+            "lastRefresh"
+        ).textContent =
+            formatDateTime(
+                new Date().toISOString()
+            );
+
+
+        document.getElementById(
+            "connection"
+        ).textContent =
+            "● Connected";
+
+
+    } catch (error) {
+
+        console.error(error);
+
+
+        const errorBox =
+            document.getElementById(
+                "errorBox"
+            );
+
+
+        errorBox.style.display =
+            "block";
+
+
+        errorBox.textContent =
+            "Unable to load team data: " +
+            error.message;
+
+
+        document.getElementById(
+            "connection"
+        ).textContent =
+            "● Connection Error";
+
+    }
+
+}
+
+
+// ==================================================
+// RENDER EMPLOYEES
+// ==================================================
+
+function renderEmployees(employees) {
+
+    const grid =
+        document.getElementById(
+            "employeeGrid"
+        );
+
+
+    grid.innerHTML = "";
+
+
+    if (!employees.length) {
+
+        grid.innerHTML = `
+
+            <div class="no-data">
+                No data available for selected date.
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    // Active employees first
+
+    employees.sort(
+        (a, b) => {
+
+            if (
+                a.status === "active" &&
+                b.status !== "active"
+            ) {
+                return -1;
+            }
+
+
+            if (
+                a.status !== "active" &&
+                b.status === "active"
+            ) {
+                return 1;
+            }
+
+
+            return 0;
+
+        }
+    );
+
+
+    employees.forEach(
+        employee => {
+
+
+            const employeeId =
+                employee.employee_id ||
+                "-";
+
+
+            const employeeName =
+                employee.employee_name ||
+                "Employee Name Not Configured";
+
+
+            const isActive =
+                employee.status ===
+                "active";
+
+
+            const application =
+                employee.application ||
+                "Unknown";
+
+
+            const activeTime =
+                employee.active_time ||
+                "0h 0m";
+
+
+            const idleTime =
+                employee.idle_time ||
+                employee.afk_time ||
+                "0h 0m";
+
+
+            const usage =
+                employee.application_usage ||
+                {};
+
+
+            let usageHTML = "";
+
+
+            const usageEntries =
+                Object.entries(usage);
+
+
+            if (
+                usageEntries.length === 0
+            ) {
+
+                usageHTML = `
+
+                    <tr>
+
+                        <td
+                            colspan="2"
+                            class="no-data"
+                        >
+                            No application usage available
+                        </td>
+
+                    </tr>
+
+                `;
+
+            } else {
+
+
+                usageEntries.sort(
+                    (a, b) => {
+
+                        return (
+                            durationToSeconds(b[1]) -
+                            durationToSeconds(a[1])
+                        );
+
+                    }
+                );
+
+
+                usageEntries.forEach(
+                    ([app, time]) => {
+
+
+                        usageHTML += `
+
+                            <tr>
+
+                                <td>
+                                    ${escapeHTML(app)}
+                                </td>
+
+                                <td>
+
+                                    ${
+                                        typeof time ===
+                                        "number"
+
+                                        ? formatSeconds(time)
+
+                                        : escapeHTML(time)
+
+                                    }
+
+                                </td>
+
+                            </tr>
+
+                        `;
+
+                    }
+                );
+
+            }
+
+
+            const card =
+                document.createElement(
+                    "div"
+                );
+
+
+            card.className =
+                "employee-card" +
+                (
+                    isActive
+                    ? ""
+                    : " offline"
+                );
+
+
+            card.innerHTML = `
+
+                <!-- EMPLOYEE HEADER -->
+
+                <div class="employee-header">
+
+                    <div>
+
+                        <div class="employee-id">
+
+                            ${escapeHTML(
+                                employeeId
+                            )}
+
+                        </div>
+
+
+                        <div class="employee-name">
+
+                            ${escapeHTML(
+                                employeeName
+                            )}
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        class="status ${
+                            isActive
+                            ? "active"
+                            : "offline"
+                        }"
+                    >
+
+                        ${
+                            isActive
+                            ? "Active"
+                            : "Offline"
+                        }
+
+                    </div>
+
+                </div>
+
+
+                <!-- DETAILS -->
+
+                <div class="details">
+
+
+                    <div class="detail-row">
+
+                        <span class="detail-label">
+                            Current Application
+                        </span>
+
+                        <span class="detail-value">
+
+                            ${escapeHTML(
+                                application
+                            )}
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="detail-row">
+
+                        <span class="detail-label">
+                            Observed Active Time
+                        </span>
+
+                        <span class="detail-value">
+
+                            ${escapeHTML(
+                                activeTime
+                            )}
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="detail-row">
+
+                        <span class="detail-label">
+                            Idle / AFK Time
+                        </span>
+
+                        <span class="detail-value">
+
+                            ${escapeHTML(
+                                idleTime
+                            )}
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="detail-row">
+
+                        <span class="detail-label">
+                            Last Sync
+                        </span>
+
+                        <span class="detail-value">
+
+                            ${formatDateTime(
+                                employee.timestamp
+                            )}
+
+                        </span>
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- APPLICATION USAGE -->
+
+                <div class="section-title">
+                    Application Usage
+                </div>
+
+
+                <table class="usage-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Application
+                            </th>
+
+                            <th>
+                                Time Used
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        ${usageHTML}
+
+                    </tbody>
+
+                </table>
+
+
+                <!-- BROWSER HISTORY ONLY NEW ADDITION -->
+
+                <div class="section-title">
+                    Browser History
+                </div>
+
+
+                <div
+                    id="history-${escapeHTML(employeeId)}"
+                    class="history-loading"
+                >
+
+                    Loading browser history...
+
+                </div>
+
+            `;
+
+
+            grid.appendChild(card);
+
+
+            // Load browser history
+
+            loadBrowserHistory(
+                employeeId,
+                `history-${employeeId}`
+            );
+
+
+        }
+    );
+
+}
+
+
+// ==================================================
 // LOAD BROWSER HISTORY
-// --------------------------------------------------
+// ==================================================
 
 async function loadBrowserHistory(
     employeeId,
@@ -784,25 +1144,39 @@ async function loadBrowserHistory(
 ) {
 
     const container =
-        document.getElementById(elementId);
+        document.getElementById(
+            elementId
+        );
+
 
     if (!container) {
         return;
     }
 
+
     try {
 
-        const response = await fetch(
-            `${BROWSER_HISTORY_API}?employee_id=${encodeURIComponent(employeeId)}&limit=20`
-        );
+
+        const response =
+            await fetch(
+
+                `${BROWSER_HISTORY_API}?employee_id=${encodeURIComponent(employeeId)}&limit=20`
+
+            );
+
 
         if (!response.ok) {
+
             throw new Error(
                 `Server returned ${response.status}`
             );
+
         }
 
-        const data = await response.json();
+
+        const data =
+            await response.json();
+
 
         const history =
             data.history || [];
@@ -811,123 +1185,156 @@ async function loadBrowserHistory(
         if (!history.length) {
 
             container.innerHTML = `
+
                 <div class="no-data">
+
                     No browser history available
+
                 </div>
+
             `;
 
             return;
+
         }
 
 
-        let rows = "";
-
-        history.forEach(item => {
-
-            const title =
-                item.title ||
-                "Untitled";
-
-            const url =
-                item.url ||
-                "-";
-
-            const visitTime =
-                item.visit_time ||
-                item.created_at ||
-                "-";
+        let historyHTML = "";
 
 
-            rows += `
+        history.forEach(
+            item => {
 
-                <tr>
 
-                    <td class="history-title">
-                        ${escapeHTML(title)}
-                    </td>
+                const title =
+                    item.title ||
+                    "Untitled";
 
-                    <td class="history-url">
-                        ${escapeHTML(url)}
-                    </td>
 
-                    <td>
-                        ${formatHistoryTime(visitTime)}
-                    </td>
+                const url =
+                    item.url ||
+                    "-";
 
-                </tr>
 
-            `;
+                const visitTime =
+                    item.visit_time ||
+                    item.created_at ||
+                    "-";
 
-        });
+
+                historyHTML += `
+
+                    <div class="history-item">
+
+
+                        <div class="history-title">
+
+                            ${escapeHTML(
+                                title
+                            )}
+
+                        </div>
+
+
+                        <div class="history-url">
+
+                            ${escapeHTML(
+                                url
+                            )}
+
+                        </div>
+
+
+                        <div class="history-time">
+
+                            Visited:
+                            ${formatDateTime(
+                                visitTime
+                            )}
+
+                        </div>
+
+
+                    </div>
+
+                `;
+
+            }
+        );
 
 
         container.innerHTML = `
 
-            <table class="history-table">
+            <div class="history-container">
 
-                <thead>
+                ${historyHTML}
 
-                    <tr>
-                        <th>Title</th>
-                        <th>URL</th>
-                        <th>Visit Time</th>
-                    </tr>
-
-                </thead>
-
-                <tbody>
-                    ${rows}
-                </tbody>
-
-            </table>
+            </div>
 
         `;
 
+
     } catch (error) {
+
 
         console.error(
             "Browser history error:",
             error
         );
 
+
         container.innerHTML = `
+
             <div class="no-data">
+
                 Browser history unavailable
+
             </div>
+
         `;
+
     }
+
 }
 
 
-// --------------------------------------------------
+// ==================================================
 // DATE PICKER
-// --------------------------------------------------
+// ==================================================
 
 document
-    .getElementById("datePicker")
-    .addEventListener("change", function () {
+    .getElementById(
+        "datePicker"
+    )
+    .addEventListener(
+        "change",
+        function() {
 
-        loadTeamData();
+            loadTeamData();
 
-    });
+        }
+    );
 
 
-// --------------------------------------------------
+// ==================================================
 // INITIAL LOAD
-// --------------------------------------------------
+// ==================================================
 
 loadTeamData();
 
 
-// --------------------------------------------------
-// AUTO REFRESH
-// --------------------------------------------------
+// ==================================================
+// AUTO REFRESH - EVERY 1 MINUTE
+// ==================================================
 
-setInterval(() => {
+setInterval(
+    () => {
 
-    loadTeamData();
+        loadTeamData();
 
-}, 60000);
+    },
+    60000
+);
 
 </script>
 
