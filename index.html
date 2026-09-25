@@ -1,2725 +1,935 @@
-<!-- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>
-        Team Activity Dashboard
-    </title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Activity Dashboard</title>
 
     <style>
-
         * {
             box-sizing: border-box;
         }
 
-
         body {
-
             margin: 0;
-
-            font-family:
-                Arial,
-                Helvetica,
-                sans-serif;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #eef4ff,
-                    #f7f9fc
-                );
-
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #eef2ff, #f8fafc);
             color: #1f2937;
         }
 
-
         .container {
-
             max-width: 1400px;
-
             margin: auto;
-
-            padding: 30px;
+            padding: 25px;
         }
 
-
-       
         .header {
-
-            display: flex;
-
-            justify-content:
-                space-between;
-
-            align-items:
-                flex-start;
-
-            margin-bottom: 25px;
-
-            gap: 20px;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
         }
-
 
         .title {
-
-            margin: 0;
-
-            color: #173b75;
-
-            font-size: 34px;
+            font-size: 30px;
+            font-weight: bold;
+            margin-bottom: 8px;
         }
-
 
         .subtitle {
-
-            margin-top: 8px;
-
-            color: #64748b;
-
-            font-size: 16px;
-        }
-
-
-        .refresh-info {
-
-            text-align: right;
-
-            color: #64748b;
-
-            font-size: 14px;
-
-            line-height: 1.6;
-        }
-
-
-        .connection {
-
-            color: #15803d;
-
-            font-weight: bold;
-        }
-
-
-    
-        .error-box {
-
-            display: none;
-
-            background: #fee2e2;
-
-            color: #991b1b;
-
-            padding: 14px 18px;
-
-            border-radius: 10px;
-
-            margin-bottom: 20px;
-
-            font-weight: bold;
-        }
-
-
-        
-
-        .summary {
-
-            display: grid;
-
-            grid-template-columns:
-                repeat(
-                    3,
-                    1fr
-                );
-
-            gap: 20px;
-
-            margin-bottom: 35px;
-        }
-
-
-        .summary-card {
-
-            background: white;
-
-            border-radius: 18px;
-
-            padding: 25px;
-
-            box-shadow:
-                0 5px 20px
-                rgba(
-                    15,
-                    23,
-                    42,
-                    0.08
-                );
-        }
-
-
-        .summary-card h3 {
-
-            margin: 0;
-
-            color: #475569;
-
-            font-size: 17px;
-        }
-
-
-        .summary-number {
-
-            margin-top: 12px;
-
-            font-size: 42px;
-
-            font-weight: bold;
-
-            color: #173b75;
-        }
-
-
-        .active-number {
-
-            color: #15803d;
-        }
-
-
-        .offline-number {
-
-            color: #dc2626;
-        }
-
-
-
-        .section-title {
-
-            color: #173b75;
-
-            font-size: 25px;
-
-            margin-bottom: 18px;
-        }
-
-
-
-        .employee-grid {
-
-            display: grid;
-
-            grid-template-columns:
-                repeat(
-                    2,
-                    minmax(
-                        0,
-                        1fr
-                    )
-                );
-
-            gap: 22px;
-        }
-
-
-        .employee-card {
-
-            background: white;
-
-            border-radius: 18px;
-
-            padding: 25px;
-
-            box-shadow:
-                0 5px 20px
-                rgba(
-                    15,
-                    23,
-                    42,
-                    0.08
-                );
-
-            border-left:
-                6px solid #16a34a;
-        }
-
-
-        .employee-card.offline {
-
-            border-left-color:
-                #dc2626;
-        }
-
-
-        .employee-header {
-
-            display: flex;
-
-            justify-content:
-                space-between;
-
-            align-items:
-                center;
-
-            padding-bottom: 18px;
-
-            border-bottom:
-                1px solid #e5e7eb;
-
-            gap: 15px;
-        }
-
-
-        .employee-id {
-
-            font-size: 22px;
-
-            font-weight: bold;
-
-            color: #173b75;
-        }
-
-
-        .status {
-
-            padding:
-                8px 15px;
-
-            border-radius: 20px;
-
-            font-size: 13px;
-
-            font-weight: bold;
-
-            text-transform:
-                capitalize;
-        }
-
-
-        .status.active {
-
-            background: #dcfce7;
-
-            color: #15803d;
-        }
-
-
-        .status.offline {
-
-            background: #fee2e2;
-
-            color: #dc2626;
-        }
-
-
-        
-        .details {
-
-            margin-top: 20px;
-        }
-
-
-        .detail-row {
-
-            display: grid;
-
-            grid-template-columns:
-                180px
-                1fr;
-
-            padding:
-                10px 0;
-
-            border-bottom:
-                1px solid #f1f5f9;
-
-            gap: 15px;
-        }
-
-
-        .detail-label {
-
-            color: #64748b;
-
+            color: #6b7280;
             font-size: 15px;
         }
 
+        .refresh-info {
+            margin-top: 10px;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .connection {
+            margin-top: 10px;
+            color: #16a34a;
+            font-weight: bold;
+        }
+
+        .error-box {
+            display: none;
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .date-section {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+        }
+
+        .date-section label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .date-section input {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 22px;
+            border-radius: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+        }
+
+        .summary-title {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .summary-value {
+            font-size: 30px;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+
+        .employee-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .employee-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .employee-card.offline {
+            opacity: 0.75;
+        }
+
+        .employee-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .employee-id {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .employee-name {
+            color: #6b7280;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status.active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status.offline {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .details {
+            border-top: 1px solid #e5e7eb;
+            padding-top: 12px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .detail-label {
+            color: #6b7280;
+        }
 
         .detail-value {
-
-            font-weight: bold;
-
+            font-weight: 600;
             text-align: right;
-
-            color: #1e293b;
         }
 
-
-
-
-        .usage-title {
-
-            margin-top: 22px;
-
-            margin-bottom: 12px;
-
-            font-size: 17px;
-
+        .section-title {
+            font-size: 16px;
             font-weight: bold;
-
-            color: #173b75;
+            margin-top: 20px;
+            margin-bottom: 10px;
         }
 
-
-        .usage-table {
-
+        .usage-table,
+        .history-table {
             width: 100%;
-
-            border-collapse:
-                collapse;
+            border-collapse: collapse;
+            font-size: 13px;
         }
 
-
-        .usage-table th {
-
+        .usage-table th,
+        .usage-table td,
+        .history-table th,
+        .history-table td {
+            padding: 8px;
+            border-bottom: 1px solid #e5e7eb;
             text-align: left;
-
-            color: #64748b;
-
-            padding:
-                8px 5px;
-
-            font-size: 14px;
         }
 
-
-        .usage-table th:last-child {
-
-            text-align: right;
+        .usage-table th,
+        .history-table th {
+            background: #f8fafc;
         }
 
-
-        .usage-table td {
-
-            padding:
-                8px 5px;
-
-            border-top:
-                1px solid #f1f5f9;
-
-            font-size: 14px;
+        .history-table {
+            table-layout: fixed;
         }
 
-
-        .usage-table td:last-child {
-
-            text-align: right;
-
-            font-weight: bold;
+        .history-table th:nth-child(1) {
+            width: 25%;
         }
 
+        .history-table th:nth-child(2) {
+            width: 55%;
+        }
+
+        .history-table th:nth-child(3) {
+            width: 20%;
+        }
+
+        .history-url {
+            word-break: break-all;
+            color: #2563eb;
+        }
+
+        .history-title {
+            word-break: break-word;
+        }
 
         .no-data {
-
-            color: #94a3b8;
-
-            padding:
-                10px 0;
+            text-align: center;
+            color: #9ca3af;
+            padding: 15px;
         }
 
+        .history-loading {
+            color: #6b7280;
+            font-size: 13px;
+            padding: 10px 0;
+        }
 
-    
-        @media (
-            max-width: 900px
-        ) {
-
+        @media (max-width: 900px) {
             .summary {
-
-                grid-template-columns:
-                    1fr;
+                grid-template-columns: 1fr;
             }
-
 
             .employee-grid {
-
-                grid-template-columns:
-                    1fr;
-            }
-
-
-            .header {
-
-                flex-direction:
-                    column;
-            }
-
-
-            .refresh-info {
-
-                text-align:
-                    left;
+                grid-template-columns: 1fr;
             }
         }
-
-
     </style>
-
 </head>
-
-
-<body>
-
-
-<div class="container">
-
-
-
-    <div class="header">
-
-        <div>
-
-            <h1 class="title">
-                Team Activity Dashboard
-            </h1>
-
-            <div class="subtitle">
-                Application Activity Tracking &amp;
-                Centralized Monitoring
-            </div>
-
-        </div>
-
-
-        <div class="refresh-info">
-
-            <div>
-                Automatic refresh: Every 1 minute
-            </div>
-
-            <div>
-                Last dashboard refresh:
-                <span id="lastRefresh">
-                    --
-                </span>
-            </div>
-
-            <div class="connection">
-                ● Connected
-            </div>
-
-        </div>
-
-    </div>
-
-
-
-
-    <div
-        id="errorBox"
-        class="error-box"
-    >
-        Unable to load activity data.
-        Please check the server.
-    </div>
-
-
-
-
-    <div class="summary">
-
-
-        <div class="summary-card">
-
-            <h3>
-                Total Employees
-            </h3>
-
-            <div
-                id="totalEmployees"
-                class="summary-number"
-            >
-                0
-            </div>
-
-        </div>
-
-
-        <div class="summary-card">
-
-            <h3>
-                Active Employees
-            </h3>
-
-            <div
-                id="activeEmployees"
-                class="summary-number active-number"
-            >
-                0
-            </div>
-
-        </div>
-
-
-        <div class="summary-card">
-
-            <h3>
-                Offline Employees
-            </h3>
-
-            <div
-                id="offlineEmployees"
-                class="summary-number offline-number"
-            >
-                0
-            </div>
-
-        </div>
-
-
-    </div>
-
-
-
-
-    <h2 class="section-title">
-        Employee Activity
-    </h2>
-
-
-    <div
-        id="employeeGrid"
-        class="employee-grid"
-    >
-    </div>
-
-
-</div>
-
-
-<script>
-
-
-const API_URL = "/api/team";
-
-
-function formatDateTime(
-    timestamp
-) {
-
-    if (!timestamp) {
-
-        return "--";
-    }
-
-
-    const date = new Date(
-        timestamp
-    );
-
-
-    if (
-        isNaN(
-            date.getTime()
-        )
-    ) {
-
-        return "--";
-    }
-
-
-    return date.toLocaleString(
-        "en-IN",
-        {
-            day: "2-digit",
-
-            month: "2-digit",
-
-            year: "2-digit",
-
-            hour: "2-digit",
-
-            minute: "2-digit",
-
-            second: "2-digit",
-
-            hour12: true
-        }
-    );
-}
-
-
-async function loadTeamData() {
-
-
-    const errorBox =
-        document.getElementById(
-            "errorBox"
-        );
-
-
-    try {
-
-
-        const response =
-            await fetch(
-                API_URL,
-                {
-                    cache: "no-store"
-                }
-            );
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                "Server returned " +
-                response.status
-            );
-        }
-
-
-        const data =
-            await response.json();
-
-
-        if (
-            data.status !==
-            "success"
-        ) {
-
-            throw new Error(
-                "Invalid server response"
-            );
-        }
-
-
-        errorBox.style.display =
-            "none";
-
-
-    
-        document.getElementById(
-            "totalEmployees"
-        ).textContent =
-            data.total_employees || 0;
-
-
-        document.getElementById(
-            "activeEmployees"
-        ).textContent =
-            data.active_employees || 0;
-
-
-        document.getElementById(
-            "offlineEmployees"
-        ).textContent =
-            data.offline_employees || 0;
-
-
-        
-        renderEmployees(
-            data.employees || []
-        );
-
-
-        
-
-        document.getElementById(
-            "lastRefresh"
-        ).textContent =
-            new Date().toLocaleString(
-                "en-IN",
-                {
-                    day: "2-digit",
-
-                    month: "2-digit",
-
-                    year: "2-digit",
-
-                    hour: "2-digit",
-
-                    minute: "2-digit",
-
-                    second: "2-digit",
-
-                    hour12: true
-                }
-            );
-
-
-    }
-
-    catch (error) {
-
-
-        console.error(
-            "Dashboard error:",
-            error
-        );
-
-
-        errorBox.style.display =
-            "block";
-
-
-        document.getElementById(
-            "totalEmployees"
-        ).textContent = "0";
-
-
-        document.getElementById(
-            "activeEmployees"
-        ).textContent = "0";
-
-
-        document.getElementById(
-            "offlineEmployees"
-        ).textContent = "0";
-
-
-        document.getElementById(
-            "employeeGrid"
-        ).innerHTML = "";
-    }
-}
-
-
-
-function renderEmployees(
-    employees
-) {
-
-
-    const grid =
-        document.getElementById(
-            "employeeGrid"
-        );
-
-
-    grid.innerHTML = "";
-
-
-    if (
-        employees.length === 0
-    ) {
-
-        grid.innerHTML = `
-            <div class="employee-card">
-                <div class="no-data">
-                    No employee activity available.
-                </div>
-            </div>
-        `;
-
-        return;
-    }
-
-
-    // Active employees first
-
-    employees.sort(
-        (a, b) => {
-
-            if (
-                a.status ===
-                b.status
-            ) {
-
-                return 0;
-            }
-
-            return a.status ===
-                "active"
-                ? -1
-                : 1;
-        }
-    );
-
-
-    employees.forEach(
-        employee => {
-
-            const card =
-                document.createElement(
-                    "div"
-                );
-
-
-            const isActive =
-                employee.status ===
-                "active";
-
-
-            card.className =
-                "employee-card" +
-                (
-                    isActive
-                        ? ""
-                        : " offline"
-                );
-
-
-           
-            const usage =
-                employee.application_usage
-                || {};
-
-
-            const usageEntries =
-                Object.entries(
-                    usage
-                );
-
-
-            let usageHTML = "";
-
-
-            if (
-                usageEntries.length === 0
-            ) {
-
-                usageHTML = `
-                    <div class="no-data">
-                        No application usage data.
-                    </div>
-                `;
-
-            }
-
-            else {
-
-                usageEntries.forEach(
-                    ([app, time]) => {
-
-                        usageHTML += `
-                            <tr>
-                                <td>
-                                    ${escapeHTML(app)}
-                                </td>
-
-                                <td>
-                                    ${escapeHTML(time)}
-                                </td>
-                            </tr>
-                        `;
-                    }
-                );
-
-                usageHTML = `
-                    <table class="usage-table">
-
-                        <thead>
-
-                            <tr>
-
-                                <th>
-                                    Application
-                                </th>
-
-                                <th>
-                                    Time Used
-                                </th>
-
-                            </tr>
-
-                        </thead>
-
-                        <tbody>
-
-                            ${usageHTML}
-
-                        </tbody>
-
-                    </table>
-                `;
-            }
-
-
-           
-
-            card.innerHTML = `
-
-                <div class="employee-header">
-
-                    <div class="employee-id">
-
-                        ${escapeHTML(
-                            employee.employee_id
-                            || "Unknown"
-                        )}
-
-                    </div>
-
-
-                    <div class="
-                        status
-                        ${
-                            isActive
-                                ? "active"
-                                : "offline"
-                        }
-                    ">
-
-                        ${
-                            isActive
-                                ? "Active"
-                                : "Offline"
-                        }
-
-                    </div>
-
-                </div>
-
-
-                <div class="details">
-
-
-                    <div class="detail-row">
-
-                        <div class="detail-label">
-                            Current Application
-                        </div>
-
-                        <div class="detail-value">
-
-                            ${
-                                escapeHTML(
-                                    employee.application
-                                    || "Unknown"
-                                )
-                            }
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="detail-row">
-
-                        <div class="detail-label">
-                            Observed Active Time
-                        </div>
-
-                        <div class="detail-value">
-
-                            ${
-                                escapeHTML(
-                                    employee.active_time
-                                    || "0h 0m"
-                                )
-                            }
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="detail-row">
-
-                        <div class="detail-label">
-                            Last Sync
-                        </div>
-
-                        <div class="detail-value">
-
-                            ${
-                                formatDateTime(
-                                    employee.timestamp
-                                )
-                            }
-
-                        </div>
-
-                    </div>
-
-
-                </div>
-
-
-                <div class="usage-title">
-                    Application Usage
-                </div>
-
-
-                ${
-                    usageEntries.length === 0
-                        ? `
-                            <div class="no-data">
-                                No application usage data.
-                            </div>
-                        `
-                        : usageHTML
-                }
-
-            `;
-
-
-            grid.appendChild(
-                card
-            );
-
-        }
-    );
-}
-
-
-
-function escapeHTML(
-    value
-) {
-
-    const div =
-        document.createElement(
-            "div"
-        );
-
-
-    div.textContent =
-        String(value);
-
-
-    return div.innerHTML;
-}
-
-
-
-loadTeamData();
-
-
-
-// Every 60 seconds
-
-setInterval(
-    loadTeamData,
-    60000
-);
-
-
-</script>
-
-
-</body>
-
-</html> -->
-
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-
-<meta charset="UTF-8">
-
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
-
-<title>Team Activity Dashboard</title>
-
-<style>
-
-* {
-    box-sizing: border-box;
-}
-
-body {
-    margin: 0;
-
-    font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
-
-    background:
-        linear-gradient(
-            135deg,
-            #eef2ff,
-            #f8fafc
-        );
-
-    color: #1e293b;
-}
-
-.container {
-    max-width: 1400px;
-    margin: auto;
-    padding: 25px;
-}
-
-/* HEADER */
-
-.header {
-    background: white;
-
-    border-radius: 15px;
-
-    padding: 25px;
-
-    margin-bottom: 20px;
-
-    box-shadow:
-        0 4px 15px
-        rgba(0,0,0,0.08);
-}
-
-.title {
-    margin: 0;
-
-    font-size: 30px;
-
-    font-weight: 700;
-}
-
-.subtitle {
-    margin-top: 8px;
-
-    color: #64748b;
-
-    font-size: 15px;
-}
-
-.refresh-info {
-    margin-top: 12px;
-
-    font-size: 13px;
-
-    color: #64748b;
-}
-
-.connection {
-    margin-top: 8px;
-
-    color: #16a34a;
-
-    font-weight: 600;
-}
-
-/* DATE SECTION */
-
-.date-section {
-    background: white;
-
-    border-radius: 15px;
-
-    padding: 20px;
-
-    margin-bottom: 20px;
-
-    box-shadow:
-        0 4px 15px
-        rgba(0,0,0,0.08);
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 15px;
-
-    flex-wrap: wrap;
-}
-
-.date-section label {
-    font-weight: 600;
-}
-
-.date-section input {
-    padding: 10px 14px;
-
-    border: 1px solid #cbd5e1;
-
-    border-radius: 8px;
-
-    font-size: 14px;
-
-    cursor: pointer;
-}
-
-.today-btn {
-    border: none;
-
-    background: #2563eb;
-
-    color: white;
-
-    padding: 10px 18px;
-
-    border-radius: 8px;
-
-    cursor: pointer;
-
-    font-weight: 600;
-}
-
-.today-btn:hover {
-    background: #1d4ed8;
-}
-
-.selected-date {
-    color: #475569;
-
-    font-size: 14px;
-
-    font-weight: 600;
-}
-
-/* ERROR */
-
-.error-box {
-    display: none;
-
-    background: #fee2e2;
-
-    color: #991b1b;
-
-    padding: 15px;
-
-    border-radius: 10px;
-
-    margin-bottom: 20px;
-
-    font-weight: 600;
-}
-
-/* SUMMARY */
-
-.summary {
-    display: grid;
-
-    grid-template-columns:
-        repeat(3, 1fr);
-
-    gap: 20px;
-
-    margin-bottom: 25px;
-}
-
-.summary-card {
-    background: white;
-
-    padding: 22px;
-
-    border-radius: 15px;
-
-    box-shadow:
-        0 4px 15px
-        rgba(0,0,0,0.08);
-}
-
-.summary-label {
-    color: #64748b;
-
-    font-size: 14px;
-}
-
-.summary-value {
-    margin-top: 8px;
-
-    font-size: 30px;
-
-    font-weight: 700;
-}
-
-/* EMPLOYEE GRID */
-
-.employee-grid {
-    display: grid;
-
-    grid-template-columns:
-        repeat(2, 1fr);
-
-    gap: 20px;
-}
-
-.employee-card {
-    background: white;
-
-    border-radius: 15px;
-
-    padding: 22px;
-
-    box-shadow:
-        0 4px 15px
-        rgba(0,0,0,0.08);
-}
-
-.employee-card.offline {
-    opacity: 0.75;
-}
-
-.employee-header {
-    display: flex;
-
-    justify-content:
-        space-between;
-
-    align-items: flex-start;
-
-    gap: 10px;
-
-    margin-bottom: 20px;
-}
-
-.employee-name {
-    font-size: 19px;
-
-    font-weight: 700;
-
-    margin-bottom: 5px;
-}
-
-.employee-id {
-    color: #64748b;
-
-    font-size: 13px;
-}
-
-.status {
-    padding: 6px 12px;
-
-    border-radius: 20px;
-
-    font-size: 12px;
-
-    font-weight: 700;
-}
-
-.status.active {
-    background: #dcfce7;
-
-    color: #166534;
-}
-
-.status.offline {
-    background: #fee2e2;
-
-    color: #991b1b;
-}
-
-/* DETAILS */
-
-.details {
-    border-top:
-        1px solid #e2e8f0;
-
-    padding-top: 15px;
-}
-
-.detail-row {
-    display: grid;
-
-    grid-template-columns:
-        180px 1fr;
-
-    gap: 10px;
-
-    padding: 8px 0;
-}
-
-.detail-label {
-    color: #64748b;
-
-    font-size: 14px;
-}
-
-.detail-value {
-    font-weight: 600;
-
-    font-size: 14px;
-}
-
-/* APPLICATION USAGE */
-
-.usage-title {
-    margin-top: 20px;
-
-    margin-bottom: 10px;
-
-    font-size: 16px;
-
-    font-weight: 700;
-}
-
-.usage-table {
-    width: 100%;
-
-    border-collapse:
-        collapse;
-}
-
-.usage-table th {
-    text-align: left;
-
-    padding: 10px;
-
-    background: #f1f5f9;
-
-    font-size: 13px;
-}
-
-.usage-table td {
-    padding: 10px;
-
-    border-bottom:
-        1px solid #e2e8f0;
-
-    font-size: 13px;
-}
-
-.no-data {
-    text-align: center;
-
-    padding: 30px;
-
-    color: #64748b;
-
-    background: white;
-
-    border-radius: 15px;
-}
-
-/* RESPONSIVE */
-
-@media (max-width: 900px) {
-
-    .summary {
-        grid-template-columns:
-            1fr;
-    }
-
-    .employee-grid {
-        grid-template-columns:
-            1fr;
-    }
-
-    .detail-row {
-        grid-template-columns:
-            1fr;
-    }
-
-}
-
-</style>
-
-</head>
-
 
 <body>
 
 <div class="container">
 
-    <!-- HEADER -->
-
     <div class="header">
-
-        <h1 class="title">
-            Team Activity Dashboard
-        </h1>
+        <div class="title">Team Activity Dashboard</div>
 
         <div class="subtitle">
             Application Activity Tracking & Centralized Monitoring
         </div>
 
         <div class="refresh-info">
-
-            Dashboard refreshes automatically every 1 minute.
-
+            Automatic refresh every 1 minute |
             Last dashboard refresh:
-
-            <span id="lastRefresh">
-                -
-            </span>
-
+            <span id="lastRefresh">-</span>
         </div>
 
-        <div
-            class="connection"
-            id="connectionStatus">
-
+        <div class="connection" id="connection">
             ● Connected
-
         </div>
-
     </div>
 
+    <div class="error-box" id="errorBox"></div>
 
     <!-- DATE SELECTOR -->
-
     <div class="date-section">
-
-        <label for="datePicker">
-            Select Date:
-        </label>
-
-        <input
-            type="date"
-            id="datePicker"
-        >
-
-        <button
-            class="today-btn"
-            onclick="loadToday()">
-
-            Today
-
-        </button>
-
-        <span
-            class="selected-date"
-            id="selectedDateText">
-
-            Loading...
-
-        </span>
-
+        <label for="datePicker">Select Date:</label>
+        <input type="date" id="datePicker">
     </div>
-
-
-    <!-- ERROR -->
-
-    <div
-        class="error-box"
-        id="errorBox">
-
-    </div>
-
 
     <!-- SUMMARY -->
-
     <div class="summary">
 
         <div class="summary-card">
-
-            <div class="summary-label">
-                Total Employees
-            </div>
-
-            <div
-                class="summary-value"
-                id="totalEmployees">
-
-                0
-
-            </div>
-
+            <div class="summary-title">Total Employees</div>
+            <div class="summary-value" id="totalEmployees">0</div>
         </div>
 
-
         <div class="summary-card">
-
-            <div class="summary-label">
-                Active Employees
-            </div>
-
-            <div
-                class="summary-value"
-                id="activeEmployees">
-
-                0
-
-            </div>
-
+            <div class="summary-title">Active Employees</div>
+            <div class="summary-value" id="activeEmployees">0</div>
         </div>
 
-
         <div class="summary-card">
-
-            <div class="summary-label">
-                Offline / Inactive
-            </div>
-
-            <div
-                class="summary-value"
-                id="offlineEmployees">
-
-                0
-
-            </div>
-
+            <div class="summary-title">Offline Employees</div>
+            <div class="summary-value" id="offlineEmployees">0</div>
         </div>
 
     </div>
 
-
     <!-- EMPLOYEE CARDS -->
-
-    <div
-        class="employee-grid"
-        id="employeeGrid">
-
+    <div class="employee-grid" id="employeeGrid">
+        <div class="no-data">
+            Loading team data...
+        </div>
     </div>
 
 </div>
 
-
 <script>
 
-/* =====================================================
-   CONFIGURATION
-===================================================== */
-
-const API_URL = "/api/team";
-
-const DAILY_API_URL =
-    "/api/team/daily";
+const LIVE_API = "/api/team";
+const DAILY_API = "/api/team/daily";
+const BROWSER_HISTORY_API = "/api/browser-history";
 
 
-/* =====================================================
-   DATE HELPERS
-===================================================== */
+// --------------------------------------------------
+// FORMAT DATE/TIME
+// --------------------------------------------------
 
-function getTodayDate() {
+function formatDateTime(timestamp) {
 
-    const now =
-        new Date();
-
-    const year =
-        now.getFullYear();
-
-    const month =
-        String(
-            now.getMonth() + 1
-        ).padStart(2, "0");
-
-    const day =
-        String(
-            now.getDate()
-        ).padStart(2, "0");
-
-    return `${year}-${month}-${day}`;
-}
-
-
-function formatSelectedDate(
-    dateString
-) {
-
-    if (!dateString) {
+    if (!timestamp) {
         return "-";
     }
 
-    const parts =
-        dateString.split("-");
+    try {
 
-    if (parts.length !== 3) {
-        return dateString;
+        const date = new Date(timestamp);
+
+        return date.toLocaleString("en-IN", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: true
+        });
+
+    } catch (error) {
+        return timestamp;
     }
-
-    return `${parts[2]}-${parts[1]}-${parts[0]}`;
 }
 
 
-/* =====================================================
-   DATE PICKER
-===================================================== */
+// --------------------------------------------------
+// FORMAT HISTORY TIME
+// --------------------------------------------------
 
-const datePicker =
-    document.getElementById(
-        "datePicker"
-    );
+function formatHistoryTime(timestamp) {
 
-datePicker.value =
-    getTodayDate();
-
-
-datePicker.addEventListener(
-    "change",
-    function () {
-
-        loadSelectedDate(
-            this.value
-        );
-
-    }
-);
-
-
-/* =====================================================
-   DATE DATA
-===================================================== */
-
-async function loadSelectedDate(
-    selectedDate
-) {
-
-    if (!selectedDate) {
-        return;
+    if (!timestamp) {
+        return "-";
     }
 
-    document.getElementById(
-        "selectedDateText"
-    ).textContent =
-        "Selected Date: " +
-        formatSelectedDate(
-            selectedDate
-        );
-
-
-    if (
-        selectedDate ===
-        getTodayDate()
-    ) {
-
-        await loadLiveTeamData();
-
-    } else {
-
-        await loadDailyTeamData(
-            selectedDate
-        );
-
-    }
-
+    return formatDateTime(timestamp);
 }
 
 
-/* =====================================================
-   TODAY
-===================================================== */
+// --------------------------------------------------
+// DURATION CONVERTER
+// --------------------------------------------------
 
-function loadToday() {
+function durationToSeconds(value) {
 
-    const today =
-        getTodayDate();
+    if (value === null || value === undefined) {
+        return 0;
+    }
 
-    datePicker.value =
-        today;
+    if (typeof value === "number") {
+        return value;
+    }
 
-    loadSelectedDate(
-        today
-    );
+    const text = String(value).trim();
 
+    if (!text) {
+        return 0;
+    }
+
+    let seconds = 0;
+
+    const hours = text.match(/(\d+)\s*h/i);
+    const minutes = text.match(/(\d+)\s*m/i);
+    const secs = text.match(/(\d+)\s*s/i);
+
+    if (hours) {
+        seconds += parseInt(hours[1]) * 3600;
+    }
+
+    if (minutes) {
+        seconds += parseInt(minutes[1]) * 60;
+    }
+
+    if (secs) {
+        seconds += parseInt(secs[1]);
+    }
+
+    if (!hours && !minutes && !secs) {
+        const numeric = Number(text);
+
+        if (!isNaN(numeric)) {
+            return numeric;
+        }
+    }
+
+    return seconds;
 }
 
 
-/* =====================================================
-   LIVE TEAM DATA
-===================================================== */
+// --------------------------------------------------
+// ESCAPE HTML
+// --------------------------------------------------
 
-async function loadLiveTeamData() {
+function escapeHTML(value) {
 
-    hideError();
+    if (value === null || value === undefined) {
+        return "";
+    }
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+// --------------------------------------------------
+// LOAD TEAM DATA
+// --------------------------------------------------
+
+async function loadTeamData() {
+
+    const selectedDate =
+        document.getElementById("datePicker").value;
+
+    let url = LIVE_API;
+
+    if (selectedDate) {
+        url = `${DAILY_API}?date=${encodeURIComponent(selectedDate)}`;
+    }
 
     try {
 
-        const response =
-            await fetch(
-                API_URL
-            );
-
+        const response = await fetch(url);
 
         if (!response.ok) {
-
             throw new Error(
                 `Server returned ${response.status}`
             );
-
         }
 
+        const data = await response.json();
 
-        const data =
-            await response.json();
-
-
-        if (
-            data.status !==
-            "success"
-        ) {
-
+        if (data.status !== "success") {
             throw new Error(
-                data.message ||
-                "Unable to load team data"
+                data.message || "Failed to load team data"
             );
-
         }
 
+        document.getElementById("errorBox").style.display = "none";
 
-        updateSummary(
-            data.employees || []
-        );
+        document.getElementById("totalEmployees").textContent =
+            data.total_employees ?? data.count ?? 0;
 
+        document.getElementById("activeEmployees").textContent =
+            data.active_employees ?? 0;
 
-        renderEmployees(
-            data.employees || [],
-            false
-        );
+        document.getElementById("offlineEmployees").textContent =
+            data.offline_employees ?? 0;
 
+        renderEmployees(data.employees || []);
 
-        updateRefreshTime();
+        document.getElementById("lastRefresh").textContent =
+            formatDateTime(new Date().toISOString());
 
+        document.getElementById("connection").textContent =
+            "● Connected";
 
     } catch (error) {
 
-        showError(
-            "Unable to load live team data: " +
-            error.message
-        );
+        console.error(error);
+
+        const errorBox =
+            document.getElementById("errorBox");
+
+        errorBox.style.display = "block";
+
+        errorBox.textContent =
+            "Unable to load team data: " + error.message;
+
+        document.getElementById("connection").textContent =
+            "● Connection Error";
 
     }
-
 }
 
 
-/* =====================================================
-   PREVIOUS DATE DATA
-===================================================== */
+// --------------------------------------------------
+// RENDER EMPLOYEES
+// --------------------------------------------------
 
-async function loadDailyTeamData(
-    selectedDate
-) {
-
-    hideError();
-
-    try {
-
-        const response =
-            await fetch(
-                `${DAILY_API_URL}?date=${encodeURIComponent(selectedDate)}`
-            );
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                `Server returned ${response.status}`
-            );
-
-        }
-
-
-        const data =
-            await response.json();
-
-
-        if (
-            data.status !==
-            "success"
-        ) {
-
-            throw new Error(
-                data.message ||
-                "Unable to load daily data"
-            );
-
-        }
-
-
-        const employees =
-            data.employees || [];
-
-
-        updateSummary(
-            employees
-        );
-
-
-        renderEmployees(
-            employees,
-            true
-        );
-
-
-        updateRefreshTime();
-
-
-    } catch (error) {
-
-        showError(
-            "Unable to load data for " +
-            formatSelectedDate(
-                selectedDate
-            ) +
-            ": " +
-            error.message
-        );
-
-    }
-
-}
-
-
-/* =====================================================
-   SUMMARY
-===================================================== */
-
-function updateSummary(
-    employees
-) {
-
-    const total =
-        employees.length;
-
-    let active = 0;
-
-
-    employees.forEach(
-        employee => {
-
-            if (
-                employee.status ===
-                "active"
-            ) {
-
-                active++;
-
-            }
-
-        }
-    );
-
-
-    const offline =
-        total - active;
-
-
-    document.getElementById(
-        "totalEmployees"
-    ).textContent =
-        total;
-
-
-    document.getElementById(
-        "activeEmployees"
-    ).textContent =
-        active;
-
-
-    document.getElementById(
-        "offlineEmployees"
-    ).textContent =
-        offline;
-
-}
-
-
-/* =====================================================
-   RENDER EMPLOYEES
-===================================================== */
-
-function renderEmployees(
-    employees,
-    isHistorical
-) {
+function renderEmployees(employees) {
 
     const grid =
-        document.getElementById(
-            "employeeGrid"
-        );
-
+        document.getElementById("employeeGrid");
 
     grid.innerHTML = "";
 
-
-    if (
-        !employees ||
-        employees.length === 0
-    ) {
+    if (!employees.length) {
 
         grid.innerHTML = `
             <div class="no-data">
-                No activity data found for
-                the selected date.
+                No data available for selected date.
             </div>
         `;
 
         return;
-
     }
 
+    employees.sort((a, b) => {
 
-    /* Active employees first */
-
-    employees.sort(
-        (a, b) => {
-
-            if (
-                a.status ===
-                b.status
-            ) {
-
-                return 0;
-
-            }
-
-            return a.status ===
-                "active"
-                ? -1
-                : 1;
-
+        if (a.status === "active" &&
+            b.status !== "active") {
+            return -1;
         }
-    );
+
+        if (a.status !== "active" &&
+            b.status === "active") {
+            return 1;
+        }
+
+        return 0;
+    });
 
 
-    employees.forEach(
-        employee => {
+    employees.forEach(employee => {
 
-            const card =
-                document.createElement(
-                    "div"
-                );
+        const employeeId =
+            employee.employee_id || "-";
 
+        const employeeName =
+            employee.employee_name ||
+            "Employee Name Not Configured";
 
-            /* STATUS */
+        const isActive =
+            employee.status === "active";
 
-            const status =
-                employee.status ===
-                "active"
-                    ? "active"
-                    : "offline";
+        const application =
+            employee.application || "Unknown";
 
+        const activeTime =
+            employee.active_time || "0h 0m";
 
-            const statusText =
-                status === "active"
-                    ? "Active"
-                    : "Offline / Inactive";
+        const idleTime =
+            employee.idle_time ||
+            employee.afk_time ||
+            "0h 0m";
 
+        const usage =
+            employee.application_usage || {};
 
-            card.className =
-                `employee-card ${status}`;
+        let usageHTML = "";
 
+        const usageEntries =
+            Object.entries(usage);
 
-            /* EMPLOYEE NAME */
+        if (usageEntries.length === 0) {
 
-            const employeeName =
-                escapeHTML(
-                    employee.employee_name ||
-                    "Employee Name Not Configured"
-                );
+            usageHTML = `
+                <tr>
+                    <td colspan="2" class="no-data">
+                        No application usage available
+                    </td>
+                </tr>
+            `;
 
+        } else {
 
-            /* EMPLOYEE ID */
+            usageEntries.sort((a, b) => {
 
-            const employeeId =
-                escapeHTML(
-                    employee.employee_id ||
-                    "-"
-                );
+                return durationToSeconds(b[1]) -
+                       durationToSeconds(a[1]);
 
+            });
 
-            /* CURRENT APPLICATION */
+            usageEntries.forEach(([app, time]) => {
 
-            const application =
-                escapeHTML(
-                    employee.application ||
-                    employee.last_application ||
-                    "Unknown"
-                );
-
-
-            /* ACTIVE TIME */
-
-            const activeTime =
-                escapeHTML(
-                    employee.active_time ||
-                    formatDuration(
-                        employee.active_seconds
-                    )
-                );
-
-
-            /* IDLE / AFK TIME */
-
-            const idleTime =
-                employee.idle_time
-                    ? escapeHTML(
-                        employee.idle_time
-                    )
-                    : formatDuration(
-                        employee.idle_seconds
-                    );
-
-
-            /* LAST SYNC */
-
-            const timestamp =
-                employee.last_sync_ist ||
-                employee.last_sync ||
-                employee.timestamp;
-
-
-            const formattedTime =
-                formatDateTime(
-                    timestamp
-                );
-
-
-            /* APPLICATION USAGE */
-
-            const usage =
-                employee.application_usage ||
-                {};
-
-
-            let usageRows = "";
-
-
-            const usageEntries =
-                Object.entries(
-                    usage
-                );
-
-
-            if (
-                usageEntries.length === 0
-            ) {
-
-                usageRows = `
+                usageHTML += `
                     <tr>
-                        <td colspan="2">
-                            No application usage data
+                        <td>${escapeHTML(app)}</td>
+                        <td>
+                            ${escapeHTML(
+                                typeof time === "number"
+                                ? formatSeconds(time)
+                                : time
+                            )}
                         </td>
                     </tr>
                 `;
 
-            } else {
-
-
-                /* Sort using numeric OR formatted values */
-
-                usageEntries.sort(
-                    (a, b) =>
-                        durationToSeconds(b[1]) -
-                        durationToSeconds(a[1])
-                );
-
-
-                usageEntries.forEach(
-                    ([appName, seconds]) => {
-
-                        usageRows += `
-                            <tr>
-
-                                <td>
-                                    ${escapeHTML(appName)}
-                                </td>
-
-                                <td>
-                                    ${formatDuration(seconds)}
-                                </td>
-
-                            </tr>
-                        `;
-
-                    }
-                );
-
-            }
-
-
-            /* CARD HTML */
-
-            card.innerHTML = `
-
-                <div class="employee-header">
-
-                    <div>
-
-                        <div class="employee-name">
-                            ${employeeName}
-                        </div>
-
-                        <div class="employee-id">
-                            Employee ID:
-                            ${employeeId}
-                        </div>
-
-                    </div>
-
-
-                    <div class="status ${status}">
-                        ${statusText}
-                    </div>
-
-                </div>
-
-
-                <div class="details">
-
-
-                    <div class="detail-row">
-
-                        <div class="detail-label">
-                            Current Application
-                        </div>
-
-                        <div class="detail-value">
-                            ${application}
-                        </div>
-
-                    </div>
-
-
-                    <div class="detail-row">
-
-                        <div class="detail-label">
-                            Observed Active Time
-                        </div>
-
-                        <div class="detail-value">
-                            ${activeTime}
-                        </div>
-
-                    </div>
-
-
-                    <!-- IDLE / AFK TIME -->
-
-                    <div class="detail-row">
-
-                        <div class="detail-label">
-                            Idle / AFK Time
-                        </div>
-
-                        <div class="detail-value">
-                            ${idleTime}
-                        </div>
-
-                    </div>
-
-
-                    <div class="detail-row">
-
-                        <div class="detail-label">
-                            Last Sync
-                        </div>
-
-                        <div class="detail-value">
-                            ${formattedTime}
-                        </div>
-
-                    </div>
-
-
-                    ${
-                        isHistorical
-                        ? `
-                        <div class="detail-row">
-
-                            <div class="detail-label">
-                                Record Date
-                            </div>
-
-                            <div class="detail-value">
-                                ${formatSelectedDate(
-                                    employee.date
-                                )}
-                            </div>
-
-                        </div>
-                        `
-                        : ""
-                    }
-
-
-                </div>
-
-
-                <div class="usage-title">
-                    Application Usage
-                </div>
-
-
-                <table class="usage-table">
-
-                    <thead>
-
-                        <tr>
-
-                            <th>
-                                Application
-                            </th>
-
-                            <th>
-                                Time Used
-                            </th>
-
-                        </tr>
-
-                    </thead>
-
-
-                    <tbody>
-
-                        ${usageRows}
-
-                    </tbody>
-
-                </table>
-
-            `;
-
-
-            grid.appendChild(
-                card
-            );
-
+            });
         }
+
+
+        const card =
+            document.createElement("div");
+
+        card.className =
+            "employee-card" +
+            (isActive ? "" : " offline");
+
+
+        card.innerHTML = `
+
+            <div class="employee-header">
+
+                <div>
+
+                    <div class="employee-id">
+                        ${escapeHTML(employeeId)}
+                    </div>
+
+                    <div class="employee-name">
+                        ${escapeHTML(employeeName)}
+                    </div>
+
+                </div>
+
+                <div class="status ${isActive ? "active" : "offline"}">
+                    ${isActive ? "Active" : "Offline"}
+                </div>
+
+            </div>
+
+
+            <div class="details">
+
+                <div class="detail-row">
+                    <span class="detail-label">
+                        Current Application
+                    </span>
+
+                    <span class="detail-value">
+                        ${escapeHTML(application)}
+                    </span>
+                </div>
+
+
+                <div class="detail-row">
+                    <span class="detail-label">
+                        Observed Active Time
+                    </span>
+
+                    <span class="detail-value">
+                        ${escapeHTML(activeTime)}
+                    </span>
+                </div>
+
+
+                <div class="detail-row">
+                    <span class="detail-label">
+                        Idle / AFK Time
+                    </span>
+
+                    <span class="detail-value">
+                        ${escapeHTML(idleTime)}
+                    </span>
+                </div>
+
+
+                <div class="detail-row">
+                    <span class="detail-label">
+                        Last Sync
+                    </span>
+
+                    <span class="detail-value">
+                        ${formatDateTime(employee.timestamp)}
+                    </span>
+                </div>
+
+            </div>
+
+
+            <!-- APPLICATION USAGE -->
+
+            <div class="section-title">
+                Application Usage
+            </div>
+
+            <table class="usage-table">
+
+                <thead>
+                    <tr>
+                        <th>Application</th>
+                        <th>Time Used</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    ${usageHTML}
+                </tbody>
+
+            </table>
+
+
+            <!-- BROWSER HISTORY -->
+
+            <div class="section-title">
+                Browser History
+            </div>
+
+            <div id="history-${escapeHTML(employeeId)}"
+                 class="history-loading">
+
+                Loading browser history...
+
+            </div>
+
+        `;
+
+
+        grid.appendChild(card);
+
+        loadBrowserHistory(
+            employeeId,
+            `history-${employeeId}`
+        );
+
+    });
+}
+
+
+// --------------------------------------------------
+// FORMAT SECONDS
+// --------------------------------------------------
+
+function formatSeconds(seconds) {
+
+    seconds = Math.max(
+        0,
+        Math.floor(Number(seconds) || 0)
     );
 
+    const hours =
+        Math.floor(seconds / 3600);
+
+    const minutes =
+        Math.floor((seconds % 3600) / 60);
+
+    const secs =
+        seconds % 60;
+
+    if (hours > 0) {
+        return `${hours}h ${minutes}m`;
+    }
+
+    if (minutes > 0) {
+        return `${minutes}m ${secs}s`;
+    }
+
+    return `${secs}s`;
 }
 
 
-/* =====================================================
-   CONVERT DURATION TO SECONDS
-===================================================== */
+// --------------------------------------------------
+// LOAD BROWSER HISTORY
+// --------------------------------------------------
 
-function durationToSeconds(
-    value
+async function loadBrowserHistory(
+    employeeId,
+    elementId
 ) {
 
-    /* Numeric seconds */
+    const container =
+        document.getElementById(elementId);
 
-    if (
-        typeof value ===
-        "number"
-    ) {
-
-        return value;
-
+    if (!container) {
+        return;
     }
-
-
-    if (!value) {
-
-        return 0;
-
-    }
-
-
-    const text =
-        String(value).trim();
-
-
-    /*
-       Supports:
-       "2h 30m"
-       "2h"
-       "30m"
-    */
-
-    const fullMatch =
-        text.match(
-            /^(\d+)\s*h\s*(\d+)\s*m$/i
-        );
-
-
-    if (fullMatch) {
-
-        return (
-            Number(fullMatch[1]) * 3600 +
-            Number(fullMatch[2]) * 60
-        );
-
-    }
-
-
-    const hourMatch =
-        text.match(
-            /^(\d+)\s*h$/i
-        );
-
-
-    if (hourMatch) {
-
-        return (
-            Number(hourMatch[1]) * 3600
-        );
-
-    }
-
-
-    const minuteMatch =
-        text.match(
-            /^(\d+)\s*m$/i
-        );
-
-
-    if (minuteMatch) {
-
-        return (
-            Number(minuteMatch[1]) * 60
-        );
-
-    }
-
-
-    /* Numeric string */
-
-    if (!isNaN(Number(text))) {
-
-        return Number(text);
-
-    }
-
-
-    return 0;
-
-}
-
-
-/* =====================================================
-   FORMAT DATE/TIME
-===================================================== */
-
-function formatDateTime(
-    timestamp
-) {
-
-    if (!timestamp) {
-
-        return "-";
-
-    }
-
 
     try {
 
-        const date =
-            new Date(timestamp);
+        const response = await fetch(
+            `${BROWSER_HISTORY_API}?employee_id=${encodeURIComponent(employeeId)}&limit=20`
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                `Server returned ${response.status}`
+            );
+        }
+
+        const data = await response.json();
+
+        const history =
+            data.history || [];
 
 
-        if (
-            isNaN(
-                date.getTime()
-            )
-        ) {
+        if (!history.length) {
 
-            return "-";
+            container.innerHTML = `
+                <div class="no-data">
+                    No browser history available
+                </div>
+            `;
 
+            return;
         }
 
 
-        return date.toLocaleString(
-            "en-IN",
-            {
-                day: "2-digit",
+        let rows = "";
 
-                month: "2-digit",
+        history.forEach(item => {
 
-                year: "numeric",
+            const title =
+                item.title ||
+                "Untitled";
 
-                hour: "2-digit",
+            const url =
+                item.url ||
+                "-";
 
-                minute: "2-digit",
+            const visitTime =
+                item.visit_time ||
+                item.created_at ||
+                "-";
 
-                second: "2-digit",
 
-                hour12: true,
+            rows += `
 
-                timeZone:
-                    "Asia/Kolkata"
-            }
-        );
+                <tr>
+
+                    <td class="history-title">
+                        ${escapeHTML(title)}
+                    </td>
+
+                    <td class="history-url">
+                        ${escapeHTML(url)}
+                    </td>
+
+                    <td>
+                        ${formatHistoryTime(visitTime)}
+                    </td>
+
+                </tr>
+
+            `;
+
+        });
+
+
+        container.innerHTML = `
+
+            <table class="history-table">
+
+                <thead>
+
+                    <tr>
+                        <th>Title</th>
+                        <th>URL</th>
+                        <th>Visit Time</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+                    ${rows}
+                </tbody>
+
+            </table>
+
+        `;
 
     } catch (error) {
 
-        return "-";
+        console.error(
+            "Browser history error:",
+            error
+        );
 
+        container.innerHTML = `
+            <div class="no-data">
+                Browser history unavailable
+            </div>
+        `;
     }
-
 }
 
 
-/* =====================================================
-   FORMAT DURATION
-===================================================== */
+// --------------------------------------------------
+// DATE PICKER
+// --------------------------------------------------
 
-function formatDuration(
-    value
-) {
+document
+    .getElementById("datePicker")
+    .addEventListener("change", function () {
 
-    const seconds =
-        durationToSeconds(
-            value
-        );
+        loadTeamData();
 
+    });
 
-    const hours =
-        Math.floor(
-            seconds / 3600
-        );
 
+// --------------------------------------------------
+// INITIAL LOAD
+// --------------------------------------------------
 
-    const minutes =
-        Math.floor(
-            (seconds % 3600) / 60
-        );
+loadTeamData();
 
 
-    return `${hours}h ${minutes}m`;
+// --------------------------------------------------
+// AUTO REFRESH
+// --------------------------------------------------
 
-}
+setInterval(() => {
 
+    loadTeamData();
 
-/* =====================================================
-   ESCAPE HTML
-===================================================== */
-
-function escapeHTML(
-    value
-) {
-
-    return String(value)
-
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-
-        .replace(
-            /</g,
-            "&lt;"
-        )
-
-        .replace(
-            />/g,
-            "&gt;"
-        )
-
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-
-        .replace(
-            /'/g,
-            "&#039;"
-        );
-
-}
-
-
-/* =====================================================
-   ERROR HANDLING
-===================================================== */
-
-function showError(
-    message
-) {
-
-    const errorBox =
-        document.getElementById(
-            "errorBox"
-        );
-
-
-    errorBox.textContent =
-        message;
-
-
-    errorBox.style.display =
-        "block";
-
-
-    document.getElementById(
-        "connectionStatus"
-    ).textContent =
-        "● Connection Error";
-
-
-    document.getElementById(
-        "connectionStatus"
-    ).style.color =
-        "#dc2626";
-
-}
-
-
-function hideError() {
-
-    const errorBox =
-        document.getElementById(
-            "errorBox"
-        );
-
-
-    errorBox.style.display =
-        "none";
-
-
-    document.getElementById(
-        "connectionStatus"
-    ).textContent =
-        "● Connected";
-
-
-    document.getElementById(
-        "connectionStatus"
-    ).style.color =
-        "#16a34a";
-
-}
-
-
-/* =====================================================
-   REFRESH TIME
-===================================================== */
-
-function updateRefreshTime() {
-
-    document.getElementById(
-        "lastRefresh"
-    ).textContent =
-        new Date().toLocaleTimeString(
-            "en-IN",
-            {
-                hour: "2-digit",
-
-                minute: "2-digit",
-
-                second: "2-digit",
-
-                hour12: true
-            }
-        );
-
-}
-
-
-/* =====================================================
-   INITIAL LOAD
-===================================================== */
-
-loadSelectedDate(
-    getTodayDate()
-);
-
-
-/* =====================================================
-   AUTO REFRESH - 1 MINUTE
-===================================================== */
-
-setInterval(
-    function () {
-
-        const selectedDate =
-            datePicker.value;
-
-
-        if (
-            selectedDate ===
-            getTodayDate()
-        ) {
-
-            loadLiveTeamData();
-
-        } else {
-
-            loadDailyTeamData(
-                selectedDate
-            );
-
-        }
-
-    },
-    60000
-);
+}, 60000);
 
 </script>
 
 </body>
-
 </html>
