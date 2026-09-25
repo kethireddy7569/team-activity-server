@@ -114,10 +114,13 @@ EMPLOYEE_NAMES = {
         "Pacchikolla Ravi Kiran",
 
     "CRFT-IT-260805":
-        "Kavanuru Soundarya"
+        "Kavanuru Soundarya",
+    "CRFT-IT-260702":
+        "Maddike Karthik Reddy",
+    "CRFT-IT-260704":
+    "Tallapalli Siva Prasad"
+
 }
-
-
 
 def format_duration(seconds):
 
