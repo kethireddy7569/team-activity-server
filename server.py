@@ -13,6 +13,10 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 
 
+# ============================================================
+# BASE CONFIGURATION
+# ============================================================
+
 BASE_DIR = Path(__file__).resolve().parent
 
 SERVICE_ACCOUNT_FILE = (
@@ -24,6 +28,9 @@ IST = ZoneInfo("Asia/Kolkata")
 OFFLINE_THRESHOLD_SECONDS = 180
 
 
+# ============================================================
+# FIREBASE INITIALIZATION
+# ============================================================
 
 if not firebase_admin._apps:
 
@@ -84,6 +91,9 @@ if not firebase_admin._apps:
 db = firestore.client()
 
 
+# ============================================================
+# FASTAPI
+# ============================================================
 
 app = FastAPI(
     title="Team Activity Monitoring Server"
@@ -99,6 +109,10 @@ app.add_middleware(
 )
 
 
+# ============================================================
+# EMPLOYEE MAPPING
+# ============================================================
+
 EMPLOYEE_NAMES = {
 
     "CRFT-IT-260601":
@@ -107,20 +121,26 @@ EMPLOYEE_NAMES = {
     "CRFT-IT-260701":
         "Gandikota Sudheer Kumar",
 
-    "CRFT-IT-260804":
-        "Kota Srinivasa Reddy",
+    "CRFT-IT-260702":
+        "Maddike Karthik Reddy",
 
     "CRFT-IT-260703":
         "Pacchikolla Ravi Kiran",
 
-    "CRFT-IT-260805":
-        "Kavanuru Soundarya",
-    "CRFT-IT-260702":
-        "Maddike Karthik Reddy",
     "CRFT-IT-260704":
-    "Tallapalli Siva Prasad"
+        "Tallapalli Siva Prasad",
 
+    "CRFT-IT-260804":
+        "Kota Srinivasa Reddy",
+
+    "CRFT-IT-260805":
+        "Kavanuru Soundarya"
 }
+
+
+# ============================================================
+# HELPER FUNCTIONS
+# ============================================================
 
 def format_duration(seconds):
 
@@ -156,12 +176,22 @@ def parse_timestamp(timestamp):
 
     try:
 
-        dt = datetime.fromisoformat(
-            str(timestamp).replace(
-                "Z",
-                "+00:00"
+        # Firestore Timestamp
+        if hasattr(
+            timestamp,
+            "to_datetime"
+        ):
+
+            dt = timestamp.to_datetime()
+
+        else:
+
+            dt = datetime.fromisoformat(
+                str(timestamp).replace(
+                    "Z",
+                    "+00:00"
+                )
             )
-        )
 
         if dt.tzinfo is None:
 
@@ -200,6 +230,10 @@ def add_employee_details(employee):
     return employee
 
 
+# ============================================================
+# HOME
+# ============================================================
+
 @app.get("/")
 def home():
 
@@ -223,6 +257,10 @@ def home():
     }
 
 
+# ============================================================
+# HEALTH
+# ============================================================
+
 @app.get("/health")
 def health():
 
@@ -235,6 +273,10 @@ def health():
             "Server is running"
     }
 
+
+# ============================================================
+# RECEIVE ACTIVITY
+# ============================================================
 
 @app.post("/api/activity")
 def receive_activity(data: dict):
@@ -254,15 +296,18 @@ def receive_activity(data: dict):
                 "employee_id is required"
         }
 
+
     timestamp = data.get(
         "timestamp"
     )
+
 
     activity_time = (
         parse_timestamp(
             timestamp
         )
     )
+
 
     if activity_time is None:
 
@@ -276,11 +321,13 @@ def receive_activity(data: dict):
             activity_time.isoformat()
         )
 
+
     activity_time_ist = (
         activity_time.astimezone(
             IST
         )
     )
+
 
     activity_date = (
         activity_time_ist.strftime(
@@ -288,15 +335,18 @@ def receive_activity(data: dict):
         )
     )
 
+
     latest_application = data.get(
         "application",
         "Unknown"
     )
 
+
     window_title = data.get(
         "window_title",
         ""
     )
+
 
     session_seconds = int(
         data.get(
@@ -305,12 +355,14 @@ def receive_activity(data: dict):
         )
     )
 
+
     active_seconds = int(
         data.get(
             "active_seconds",
             0
         )
     )
+
 
     idle_seconds = int(
         data.get(
@@ -319,10 +371,12 @@ def receive_activity(data: dict):
         )
     )
 
+
     application_usage = data.get(
         "application_usage",
         {}
     )
+
 
     if not isinstance(
         application_usage,
@@ -331,31 +385,40 @@ def receive_activity(data: dict):
 
         application_usage = {}
 
+
     session_seconds = max(
         session_seconds,
         0
     )
+
 
     active_seconds = max(
         active_seconds,
         0
     )
 
+
     idle_seconds = max(
         idle_seconds,
         0
     )
+
 
     active_seconds = min(
         active_seconds,
         session_seconds
     )
 
+
     idle_seconds = min(
         idle_seconds,
         session_seconds
     )
 
+
+    # ========================================================
+    # LATEST ACTIVITY
+    # ========================================================
 
     latest_activity = {
 
@@ -420,9 +483,14 @@ def receive_activity(data: dict):
     )
 
 
+    # ========================================================
+    # DAILY ACTIVITY
+    # ========================================================
+
     daily_document_id = (
         f"{employee_id}_{activity_date}"
     )
+
 
     daily_data = {
 
@@ -493,6 +561,10 @@ def receive_activity(data: dict):
         merge=True
     )
 
+
+    # ========================================================
+    # ACTIVITY LOG
+    # ========================================================
 
     log_data = {
 
@@ -567,6 +639,11 @@ def receive_activity(data: dict):
             "Activity saved successfully"
     }
 
+
+# ============================================================
+# RECEIVE BROWSER HISTORY
+# ============================================================
+
 @app.post("/api/browser-history")
 def receive_browser_history(data: dict):
 
@@ -622,6 +699,7 @@ def receive_browser_history(data: dict):
             item,
             dict
         ):
+
             continue
 
 
@@ -630,10 +708,12 @@ def receive_browser_history(data: dict):
             ""
         )
 
+
         title = item.get(
             "title",
             ""
         )
+
 
         visit_time = item.get(
             "visit_time"
@@ -662,7 +742,7 @@ def receive_browser_history(data: dict):
                 url,
 
             "title":
-                title,
+                title or "Untitled",
 
             "visit_time":
                 visit_time,
@@ -706,11 +786,19 @@ def receive_browser_history(data: dict):
     }
 
 
+# ============================================================
+# GET BROWSER HISTORY
+# DATE FILTER INCLUDED
+# ============================================================
 
 @app.get("/api/browser-history")
 def get_browser_history(
 
     employee_id: str = Query(...),
+
+    date: str = Query(
+        default=None
+    ),
 
     limit: int = Query(
         default=50,
@@ -720,6 +808,35 @@ def get_browser_history(
 
 ):
 
+    # --------------------------------------------------------
+    # Validate selected date
+    # --------------------------------------------------------
+
+    if date:
+
+        try:
+
+            datetime.strptime(
+                date,
+                "%Y-%m-%d"
+            )
+
+        except ValueError:
+
+            return {
+
+                "status":
+                    "failed",
+
+                "message":
+                    "Invalid date format. Use YYYY-MM-DD."
+            }
+
+
+    # --------------------------------------------------------
+    # Get employee browser history
+    # --------------------------------------------------------
+
     docs = (
         db.collection(
             "browser_history"
@@ -728,9 +845,6 @@ def get_browser_history(
             "employee_id",
             "==",
             employee_id
-        )
-        .limit(
-            limit
         )
         .stream()
     )
@@ -744,9 +858,105 @@ def get_browser_history(
         item = doc.to_dict()
 
 
-        history.append(
-            item
+        visit_time = item.get(
+            "visit_time"
         )
+
+
+        parsed_time = (
+            parse_timestamp(
+                visit_time
+            )
+        )
+
+
+        if parsed_time is None:
+
+            continue
+
+
+        # Convert to IST
+        visit_time_ist = (
+            parsed_time.astimezone(
+                IST
+            )
+        )
+
+
+        # ----------------------------------------------------
+        # DATE FILTER
+        # ----------------------------------------------------
+
+        if date:
+
+            visit_date = (
+                visit_time_ist.strftime(
+                    "%Y-%m-%d"
+                )
+            )
+
+
+            if visit_date != date:
+
+                continue
+
+
+        # ----------------------------------------------------
+        # Prepare response
+        # ----------------------------------------------------
+
+        history.append({
+
+            "employee_id":
+                employee_id,
+
+            "employee_name":
+                item.get(
+                    "employee_name",
+                    get_employee_name(
+                        employee_id
+                    )
+                ),
+
+            "browser":
+                item.get(
+                    "browser",
+                    "Chrome"
+                ),
+
+            "title":
+                item.get(
+                    "title"
+                ) or "Untitled",
+
+            "url":
+                item.get(
+                    "url",
+                    ""
+                ),
+
+            "visit_time":
+                visit_time_ist.isoformat()
+
+        })
+
+
+    # --------------------------------------------------------
+    # Latest first
+    # --------------------------------------------------------
+
+    history.sort(
+        key=lambda x:
+            x.get(
+                "visit_time",
+                ""
+            ),
+        reverse=True
+    )
+
+
+    # Apply limit AFTER date filtering
+    history = history[:limit]
 
 
     return {
@@ -757,6 +967,14 @@ def get_browser_history(
         "employee_id":
             employee_id,
 
+        "employee_name":
+            get_employee_name(
+                employee_id
+            ),
+
+        "date":
+            date,
+
         "count":
             len(history),
 
@@ -764,6 +982,10 @@ def get_browser_history(
             history
     }
 
+
+# ============================================================
+# LIVE TEAM ACTIVITY
+# ============================================================
 
 @app.get("/api/team")
 def get_team_activity():
@@ -851,7 +1073,9 @@ def get_team_activity():
                 "last_sync_ist"
             ] = (
                 last_time
-                .astimezone(IST)
+                .astimezone(
+                    IST
+                )
                 .isoformat()
             )
 
@@ -913,7 +1137,9 @@ def get_team_activity():
     }
 
 
-
+# ============================================================
+# DAILY TEAM ACTIVITY
+# ============================================================
 
 @app.get("/api/team/daily")
 def get_daily_team_activity(
@@ -1004,6 +1230,9 @@ def get_daily_team_activity(
     }
 
 
+# ============================================================
+# SINGLE EMPLOYEE
+# ============================================================
 
 @app.get(
     "/api/employee/{employee_id}"
@@ -1075,6 +1304,9 @@ def get_employee_activity(
     }
 
 
+# ============================================================
+# LOCAL RUN
+# ============================================================
 
 if __name__ == "__main__":
 

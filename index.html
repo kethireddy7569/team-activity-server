@@ -372,6 +372,8 @@ body {
 }
 
 
+/* BROWSER HISTORY */
+
 .browser-history-title {
     margin-top: 20px;
 
@@ -413,16 +415,6 @@ body {
     margin-bottom: 5px;
 
     word-break: break-word;
-}
-
-.browser-history-url {
-    color: #2563eb;
-
-    font-size: 12px;
-
-    word-break: break-all;
-
-    margin-bottom: 5px;
 }
 
 .browser-history-time {
@@ -643,6 +635,9 @@ const DAILY_API_URL =
     "/api/team/daily";
 
 
+/* =====================================================
+   TODAY DATE
+===================================================== */
 
 function getTodayDate() {
 
@@ -666,6 +661,10 @@ function getTodayDate() {
 }
 
 
+/* =====================================================
+   FORMAT SELECTED DATE
+===================================================== */
+
 function formatSelectedDate(
     dateString
 ) {
@@ -685,12 +684,15 @@ function formatSelectedDate(
 }
 
 
-
+/* =====================================================
+   DATE PICKER
+===================================================== */
 
 const datePicker =
     document.getElementById(
         "datePicker"
     );
+
 
 datePicker.value =
     getTodayDate();
@@ -708,7 +710,9 @@ datePicker.addEventListener(
 );
 
 
-
+/* =====================================================
+   LOAD SELECTED DATE
+===================================================== */
 
 async function loadSelectedDate(
     selectedDate
@@ -717,6 +721,7 @@ async function loadSelectedDate(
     if (!selectedDate) {
         return;
     }
+
 
     document.getElementById(
         "selectedDateText"
@@ -732,7 +737,9 @@ async function loadSelectedDate(
         getTodayDate()
     ) {
 
-        await loadLiveTeamData();
+        await loadLiveTeamData(
+            selectedDate
+        );
 
     } else {
 
@@ -744,6 +751,10 @@ async function loadSelectedDate(
 
 }
 
+
+/* =====================================================
+   TODAY BUTTON
+===================================================== */
 
 function loadToday() {
 
@@ -760,7 +771,13 @@ function loadToday() {
 }
 
 
-async function loadLiveTeamData() {
+/* =====================================================
+   LIVE TEAM DATA
+===================================================== */
+
+async function loadLiveTeamData(
+    selectedDate
+) {
 
     hideError();
 
@@ -798,14 +815,19 @@ async function loadLiveTeamData() {
         }
 
 
+        const employees =
+            data.employees || [];
+
+
         updateSummary(
-            data.employees || []
+            employees
         );
 
 
         renderEmployees(
-            data.employees || [],
-            false
+            employees,
+            false,
+            selectedDate
         );
 
 
@@ -824,6 +846,9 @@ async function loadLiveTeamData() {
 }
 
 
+/* =====================================================
+   HISTORICAL TEAM DATA
+===================================================== */
 
 async function loadDailyTeamData(
     selectedDate
@@ -876,7 +901,8 @@ async function loadDailyTeamData(
 
         renderEmployees(
             employees,
-            true
+            true,
+            selectedDate
         );
 
 
@@ -898,6 +924,10 @@ async function loadDailyTeamData(
 
 }
 
+
+/* =====================================================
+   SUMMARY
+===================================================== */
 
 function updateSummary(
     employees
@@ -949,10 +979,14 @@ function updateSummary(
 }
 
 
+/* =====================================================
+   RENDER EMPLOYEES
+===================================================== */
 
 function renderEmployees(
     employees,
-    isHistorical
+    isHistorical,
+    selectedDate
 ) {
 
     const grid =
@@ -1128,8 +1162,6 @@ function renderEmployees(
             } else {
 
 
-                /* Sort using numeric OR formatted values */
-
                 usageEntries.sort(
                     (a, b) =>
                         durationToSeconds(b[1]) -
@@ -1216,8 +1248,6 @@ function renderEmployees(
                     </div>
 
 
-                    <!-- IDLE / AFK TIME -->
-
                     <div class="detail-row">
 
                         <div class="detail-label">
@@ -1301,10 +1331,6 @@ function renderEmployees(
                 </table>
 
 
-                <!-- =================================================
-                     BROWSER HISTORY - ONLY NEW ADDITION
-                ================================================== -->
-
                 <div class="browser-history-title">
                     Browser History
                 </div>
@@ -1327,11 +1353,13 @@ function renderEmployees(
             );
 
 
-            /* Load browser history */
+            /* IMPORTANT:
+               Selected date is passed here */
 
             loadBrowserHistory(
                 employee.employee_id,
-                `browser-history-${employee.employee_id}`
+                `browser-history-${employee.employee_id}`,
+                selectedDate
             );
 
         }
@@ -1341,12 +1369,14 @@ function renderEmployees(
 
 
 /* =====================================================
-   BROWSER HISTORY - ONLY NEW FUNCTION
+   BROWSER HISTORY
+   SELECTED DATE FILTER
 ===================================================== */
 
 async function loadBrowserHistory(
     employeeId,
-    elementId
+    elementId,
+    selectedDate
 ) {
 
     const container =
@@ -1364,7 +1394,7 @@ async function loadBrowserHistory(
 
         const response =
             await fetch(
-                `/api/browser-history?employee_id=${encodeURIComponent(employeeId)}&limit=20`
+                `/api/browser-history?employee_id=${encodeURIComponent(employeeId)}&date=${encodeURIComponent(selectedDate)}&limit=50`
             );
 
 
@@ -1393,7 +1423,12 @@ async function loadBrowserHistory(
 
                 <div class="browser-history-empty">
 
-                    No browser history available
+                    No browser history for
+                    ${escapeHTML(
+                        formatSelectedDate(
+                            selectedDate
+                        )
+                    )}
 
                 </div>
 
@@ -1415,14 +1450,8 @@ async function loadBrowserHistory(
                     "Untitled";
 
 
-                const url =
-                    item.url ||
-                    "-";
-
-
                 const visitTime =
                     item.visit_time ||
-                    item.created_at ||
                     "-";
 
 
@@ -1441,9 +1470,6 @@ async function loadBrowserHistory(
                             )}
 
                         </div>
-
-
-                      
 
 
                         <div
@@ -1502,14 +1528,12 @@ async function loadBrowserHistory(
 
 
 /* =====================================================
-   CONVERT DURATION TO SECONDS
+   DURATION TO SECONDS
 ===================================================== */
 
 function durationToSeconds(
     value
 ) {
-
-    /* Numeric seconds */
 
     if (
         typeof value ===
@@ -1531,13 +1555,6 @@ function durationToSeconds(
     const text =
         String(value).trim();
 
-
-    /*
-       Supports:
-       "2h 30m"
-       "2h"
-       "30m"
-    */
 
     const fullMatch =
         text.match(
@@ -1584,8 +1601,6 @@ function durationToSeconds(
 
     }
 
-
-    /* Numeric string */
 
     if (!isNaN(Number(text))) {
 
@@ -1843,7 +1858,9 @@ setInterval(
             getTodayDate()
         ) {
 
-            loadLiveTeamData();
+            loadLiveTeamData(
+                selectedDate
+            );
 
         } else {
 
