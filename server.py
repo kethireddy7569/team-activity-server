@@ -1,1325 +1,341 @@
-from fastapi import FastAPI, Query
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+"""Team Activity Monitoring Server (FastAPI + Firestore) - production build.
 
+Environment variables (set in Vercel -> Settings -> Environment Variables):
+  FIREBASE_SERVICE_ACCOUNT_JSON  full service-account JSON (one line)
+  TRACKER_API_KEY                shared secret sent by tracker.py in X-API-Key
+  DASHBOARD_USER / DASHBOARD_PASSWORD  HTTP Basic login for dashboard + read APIs
+  ALLOWED_ORIGINS                optional, comma-separated (default: same-origin only)
+  EMPLOYEE_NAMES_JSON            optional {"CRFT-IT-260601": "Name", ...} override
+"""
+import json
+import logging
+import os
+import secrets
 from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-import os
-import json
-
 import firebase_admin
+from fastapi import Depends, FastAPI, HTTPException, Query, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from firebase_admin import credentials, firestore
+from pydantic import BaseModel, ConfigDict, Field
 
-
-# ============================================================
-# BASE CONFIGURATION
-# ============================================================
+log = logging.getLogger("team-activity")
+logging.basicConfig(level=logging.INFO)
 
 BASE_DIR = Path(__file__).resolve().parent
-
-SERVICE_ACCOUNT_FILE = (
-    BASE_DIR / "serviceAccountKey.json"
-)
-
+INDEX_FILE = BASE_DIR / "dashboard" / "index.html"
 IST = ZoneInfo("Asia/Kolkata")
-
 OFFLINE_THRESHOLD_SECONDS = 180
+MAX_HISTORY_ITEMS = 200
 
+TRACKER_API_KEY = os.environ.get("TRACKER_API_KEY", "")
+DASHBOARD_USER = os.environ.get("DASHBOARD_USER", "")
+DASHBOARD_PASSWORD = os.environ.get("DASHBOARD_PASSWORD", "")
 
-# ============================================================
-# FIREBASE INITIALIZATION
-# ============================================================
-
-if not firebase_admin._apps:
-
-    firebase_json = os.environ.get(
-        "FIREBASE_SERVICE_ACCOUNT_JSON"
-    )
-
-    if firebase_json:
-
-        try:
-
-            service_account_info = json.loads(
-                firebase_json
-            )
-
-            cred = credentials.Certificate(
-                service_account_info
-            )
-
-            firebase_admin.initialize_app(
-                cred
-            )
-
-            print(
-                "Firebase initialized using environment variable."
-            )
-
-        except Exception as e:
-
-            print(
-                "Firebase environment variable error:",
-                e
-            )
-
-            raise
-
-    elif SERVICE_ACCOUNT_FILE.exists():
-
-        cred = credentials.Certificate(
-            str(SERVICE_ACCOUNT_FILE)
-        )
-
-        firebase_admin.initialize_app(
-            cred
-        )
-
-        print(
-            "Firebase initialized using serviceAccountKey.json."
-        )
-
-    else:
-
-        raise RuntimeError(
-            "Firebase credentials not found."
-        )
-
-
-db = firestore.client()
-
-
-# ============================================================
-# FASTAPI
-# ============================================================
-
-app = FastAPI(
-    title="Team Activity Monitoring Server"
-)
-
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
-# ============================================================
-# EMPLOYEE MAPPING
-# ============================================================
-
-EMPLOYEE_NAMES = {
-
-    "CRFT-IT-260601":
-        "Akhila Kethireddy",
-
-    "CRFT-IT-260701":
-        "Gandikota Sudheer Kumar",
-
-    "CRFT-IT-260702":
-        "Maddike Karthik Reddy",
-
-    "CRFT-IT-260703":
-        "Pacchikolla Ravi Kiran",
-
-    "CRFT-IT-260704":
-        "Tallapalli Siva Prasad",
-
-    "CRFT-IT-260804":
-        "Kota Srinivasa Reddy",
-
-    "CRFT-IT-260805":
-        "Kavanuru Soundarya"
+DEFAULT_EMPLOYEE_NAMES = {
+    "CRFT-IT-260601": "Akhila Kethireddy",
+    "CRFT-IT-260701": "Gandikota Sudheer Kumar",
+    "CRFT-IT-260702": "Maddike Karthik Reddy",
+    "CRFT-IT-260703": "Pacchikolla Ravi Kiran",
+    "CRFT-IT-260704": "Tallapalli Siva Prasad",
+    "CRFT-IT-260804": "Kota Srinivasa Reddy",
+    "CRFT-IT-260805": "Kavanuru Soundarya",
 }
+try:
+    EMPLOYEE_NAMES = json.loads(os.environ.get("EMPLOYEE_NAMES_JSON", "")) or DEFAULT_EMPLOYEE_NAMES
+except json.JSONDecodeError:
+    EMPLOYEE_NAMES = DEFAULT_EMPLOYEE_NAMES
 
 
-# ============================================================
-# HELPER FUNCTIONS
-# ============================================================
-
-def format_duration(seconds):
-
-    try:
-
-        seconds = int(
-            max(
-                float(seconds),
-                0
-            )
-        )
-
-    except Exception:
-
-        seconds = 0
-
-    hours = seconds // 3600
-
-    minutes = (
-        seconds % 3600
-    ) // 60
-
-    return (
-        f"{hours}h {minutes}m"
-    )
+# ---------------------------------------------------------------- Firestore
+_db = None
 
 
-def parse_timestamp(timestamp):
-
-    if not timestamp:
-
-        return None
-
-    try:
-
-        # Firestore Timestamp
-        if hasattr(
-            timestamp,
-            "to_datetime"
-        ):
-
-            dt = timestamp.to_datetime()
-
+def get_db():
+    """Lazy init so a credentials problem returns a clear JSON error, not a crash."""
+    global _db
+    if _db is not None:
+        return _db
+    if not firebase_admin._apps:
+        raw = os.environ.get("FIREBASE_SERVICE_ACCOUNT_JSON")
+        key_file = BASE_DIR / "serviceAccountKey.json"
+        if raw:
+            info = json.loads(raw)
+            if isinstance(info.get("private_key"), str):
+                info["private_key"] = info["private_key"].replace("\\n", "\n")
+            cred = credentials.Certificate(info)
+        elif key_file.exists():
+            cred = credentials.Certificate(str(key_file))
         else:
+            raise RuntimeError("Firebase credentials not configured")
+        firebase_admin.initialize_app(cred)
+    _db = firestore.client()
+    return _db
 
-            dt = datetime.fromisoformat(
-                str(timestamp).replace(
-                    "Z",
-                    "+00:00"
-                )
-            )
 
-        if dt.tzinfo is None:
+# ---------------------------------------------------------------------- App
+app = FastAPI(title="Team Activity Monitoring Server", docs_url=None, redoc_url=None, openapi_url=None)
 
-            dt = dt.replace(
-                tzinfo=timezone.utc
-            )
+origins = [o.strip() for o in os.environ.get("ALLOWED_ORIGINS", "").split(",") if o.strip()]
+if origins:
+    app.add_middleware(
+        CORSMiddleware, allow_origins=origins, allow_methods=["GET", "POST"],
+        allow_headers=["X-API-Key", "Content-Type", "Authorization"],
+    )
 
-        return dt
+basic = HTTPBasic(auto_error=False)
 
+
+def require_dashboard(creds: HTTPBasicCredentials = Depends(basic)):
+    if not (DASHBOARD_USER and DASHBOARD_PASSWORD):
+        raise HTTPException(503, "Dashboard login not configured")
+    ok = creds is not None and secrets.compare_digest(
+        creds.username.encode(), DASHBOARD_USER.encode()
+    ) and secrets.compare_digest(creds.password.encode(), DASHBOARD_PASSWORD.encode())
+    if not ok:
+        raise HTTPException(401, "Unauthorized", headers={"WWW-Authenticate": 'Basic realm="Team Activity"'})
+
+
+def require_tracker(request: Request):
+    key = request.headers.get("x-api-key", "")
+    if not TRACKER_API_KEY or not secrets.compare_digest(key.encode(), TRACKER_API_KEY.encode()):
+        raise HTTPException(401, "Invalid API key")
+
+
+@app.exception_handler(Exception)
+async def unhandled(request: Request, exc: Exception):
+    log.exception("Unhandled error on %s", request.url.path)
+    return JSONResponse({"status": "failed", "message": "Internal server error"}, status_code=500)
+
+
+# ------------------------------------------------------------------ Helpers
+def format_duration(seconds):
+    try:
+        seconds = int(max(float(seconds), 0))
+    except (TypeError, ValueError):
+        seconds = 0
+    return f"{seconds // 3600}h {(seconds % 3600) // 60}m"
+
+
+def parse_timestamp(value):
+    if not value:
+        return None
+    try:
+        dt = value.to_datetime() if hasattr(value, "to_datetime") else datetime.fromisoformat(
+            str(value).replace("Z", "+00:00"))
+        return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
     except Exception:
-
         return None
 
 
-def get_employee_name(employee_id):
-
-    return EMPLOYEE_NAMES.get(
-        employee_id,
-        "Employee Name Not Configured"
-    )
+def name_of(employee_id):
+    return EMPLOYEE_NAMES.get(employee_id, "Employee Name Not Configured")
 
 
-def add_employee_details(employee):
-
-    employee_id = employee.get(
-        "employee_id",
-        ""
-    )
-
-    employee["employee_name"] = (
-        get_employee_name(
-            employee_id
-        )
-    )
-
-    return employee
+def valid_date(value):
+    try:
+        datetime.strptime(value, "%Y-%m-%d")
+    except ValueError:
+        raise HTTPException(400, "Invalid date format. Use YYYY-MM-DD.")
 
 
-# ============================================================
-# HOME
-# ============================================================
+def clean_usage(usage):
+    if not isinstance(usage, dict):
+        return {}
+    out = {}
+    for k, v in list(usage.items())[:200]:
+        try:
+            out[str(k)[:150].replace("/", "_")] = max(int(v), 0)
+        except (TypeError, ValueError):
+            continue
+    return out
 
+
+class ActivityIn(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    employee_id: str = Field(min_length=1, max_length=64)
+    application: str = Field(default="Unknown", max_length=200)
+    window_title: str = Field(default="", max_length=500)
+    timestamp: str | None = None
+    session_seconds: int = 0
+    active_seconds: int = 0
+    idle_seconds: int = 0
+    application_usage: dict = Field(default_factory=dict)
+
+
+class HistoryIn(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    employee_id: str = Field(min_length=1, max_length=64)
+    browser: str = "Chrome"
+    history: list[dict] = Field(default_factory=list)
+
+
+# ------------------------------------------------------------------- Routes
 @app.get("/")
-def home():
+def home(_=Depends(require_dashboard)):
+    if INDEX_FILE.exists():
+        return FileResponse(INDEX_FILE)
+    return {"status": "success", "message": "Team Activity Monitoring Server is running"}
 
-    index_file = (
-        BASE_DIR / "index.html"
-    )
-
-    if index_file.exists():
-
-        return FileResponse(
-            index_file
-        )
-
-    return {
-
-        "status":
-            "success",
-
-        "message":
-            "Team Activity Monitoring Server is running"
-    }
-
-
-# ============================================================
-# HEALTH
-# ============================================================
 
 @app.get("/health")
 def health():
+    """Public liveness check. Add ?deep=1 to also test Firestore."""
+    return {"status": "success", "message": "Server is running"}
 
-    return {
 
-        "status":
-            "success",
+@app.get("/health/deep")
+def health_deep(_=Depends(require_dashboard)):
+    try:
+        list(get_db().collection("latest_activity").limit(1).stream())
+        return {"status": "success", "firestore": "ok"}
+    except Exception as e:
+        log.exception("Deep health failed")
+        return JSONResponse({"status": "failed", "firestore": type(e).__name__}, status_code=503)
 
-        "message":
-            "Server is running"
+
+@app.post("/api/activity", dependencies=[Depends(require_tracker)])
+def receive_activity(data: ActivityIn):
+    db = get_db()
+    ts = parse_timestamp(data.timestamp) or datetime.now(timezone.utc)
+    ts_ist = ts.astimezone(IST)
+    date = ts_ist.strftime("%Y-%m-%d")
+
+    session = max(data.session_seconds, 0)
+    active = min(max(data.active_seconds, 0), session)
+    idle = min(max(data.idle_seconds, 0), session)
+    usage = clean_usage(data.application_usage)
+    emp = data.employee_id
+
+    common = {
+        "employee_id": emp, "employee_name": name_of(emp),
+        "session_seconds": session, "session_time": format_duration(session),
+        "active_seconds": active, "active_time": format_duration(active),
+        "idle_seconds": idle, "idle_time": format_duration(idle),
+        "application_usage": usage,
     }
-
-
-# ============================================================
-# RECEIVE ACTIVITY
-# ============================================================
-
-@app.post("/api/activity")
-def receive_activity(data: dict):
-
-    employee_id = data.get(
-        "employee_id"
-    )
-
-    if not employee_id:
-
-        return {
-
-            "status":
-                "failed",
-
-            "message":
-                "employee_id is required"
-        }
-
-
-    timestamp = data.get(
-        "timestamp"
-    )
-
-
-    activity_time = (
-        parse_timestamp(
-            timestamp
-        )
-    )
-
-
-    if activity_time is None:
-
-        activity_time = (
-            datetime.now(
-                timezone.utc
-            )
-        )
-
-        timestamp = (
-            activity_time.isoformat()
-        )
-
-
-    activity_time_ist = (
-        activity_time.astimezone(
-            IST
-        )
-    )
-
-
-    activity_date = (
-        activity_time_ist.strftime(
-            "%Y-%m-%d"
-        )
-    )
-
-
-    latest_application = data.get(
-        "application",
-        "Unknown"
-    )
-
-
-    window_title = data.get(
-        "window_title",
-        ""
-    )
-
-
-    session_seconds = int(
-        data.get(
-            "session_seconds",
-            0
-        )
-    )
-
-
-    active_seconds = int(
-        data.get(
-            "active_seconds",
-            0
-        )
-    )
-
-
-    idle_seconds = int(
-        data.get(
-            "idle_seconds",
-            0
-        )
-    )
-
-
-    application_usage = data.get(
-        "application_usage",
-        {}
-    )
-
-
-    if not isinstance(
-        application_usage,
-        dict
-    ):
-
-        application_usage = {}
-
-
-    session_seconds = max(
-        session_seconds,
-        0
-    )
-
-
-    active_seconds = max(
-        active_seconds,
-        0
-    )
-
-
-    idle_seconds = max(
-        idle_seconds,
-        0
-    )
-
-
-    active_seconds = min(
-        active_seconds,
-        session_seconds
-    )
-
-
-    idle_seconds = min(
-        idle_seconds,
-        session_seconds
-    )
-
-
-    # ========================================================
-    # LATEST ACTIVITY
-    # ========================================================
-
-    latest_activity = {
-
-        "employee_id":
-            employee_id,
-
-        "employee_name":
-            get_employee_name(
-                employee_id
-            ),
-
-        "status":
-            "active",
-
-        "application":
-            latest_application,
-
-        "window_title":
-            window_title,
-
-        "timestamp":
-            timestamp,
-
-        "last_sync_ist":
-            activity_time_ist.isoformat(),
-
-        "session_seconds":
-            session_seconds,
-
-        "session_time":
-            format_duration(
-                session_seconds
-            ),
-
-        "active_seconds":
-            active_seconds,
-
-        "active_time":
-            format_duration(
-                active_seconds
-            ),
-
-        "idle_seconds":
-            idle_seconds,
-
-        "idle_time":
-            format_duration(
-                idle_seconds
-            ),
-
-        "application_usage":
-            application_usage
-    }
-
-
-    db.collection(
-        "latest_activity"
-    ).document(
-        employee_id
-    ).set(
-        latest_activity
-    )
-
-
-    # ========================================================
-    # DAILY ACTIVITY
-    # ========================================================
-
-    daily_document_id = (
-        f"{employee_id}_{activity_date}"
-    )
-
-
-    daily_data = {
-
-        "employee_id":
-            employee_id,
-
-        "employee_name":
-            get_employee_name(
-                employee_id
-            ),
-
-        "date":
-            activity_date,
-
-        "last_application":
-            latest_application,
-
-        "last_status":
-            "active",
-
-        "last_window":
-            window_title,
-
-        "last_sync":
-            timestamp,
-
-        "last_sync_ist":
-            activity_time_ist.isoformat(),
-
-        "session_seconds":
-            session_seconds,
-
-        "session_time":
-            format_duration(
-                session_seconds
-            ),
-
-        "active_seconds":
-            active_seconds,
-
-        "active_time":
-            format_duration(
-                active_seconds
-            ),
-
-        "idle_seconds":
-            idle_seconds,
-
-        "idle_time":
-            format_duration(
-                idle_seconds
-            ),
-
-        "application_usage":
-            application_usage,
-
-        "updated_at":
-            firestore.SERVER_TIMESTAMP
-    }
-
-
-    db.collection(
-        "daily_activity"
-    ).document(
-        daily_document_id
-    ).set(
-        daily_data,
-        merge=True
-    )
-
-
-    # ========================================================
-    # ACTIVITY LOG
-    # ========================================================
-
-    log_data = {
-
-        "employee_id":
-            employee_id,
-
-        "employee_name":
-            get_employee_name(
-                employee_id
-            ),
-
-        "date":
-            activity_date,
-
-        "status":
-            "active",
-
-        "application":
-            latest_application,
-
-        "window_title":
-            window_title,
-
-        "timestamp":
-            timestamp,
-
-        "session_seconds":
-            session_seconds,
-
-        "active_seconds":
-            active_seconds,
-
-        "idle_seconds":
-            idle_seconds,
-
-        "application_usage":
-            application_usage,
-
-        "created_at":
-            firestore.SERVER_TIMESTAMP
-    }
-
-
-    db.collection(
-        "activity_logs"
-    ).add(
-        log_data
-    )
-
-
-    print(
-        f"[ACTIVITY] "
-        f"{employee_id} | "
-        f"{latest_application} | "
-        f"Active: "
-        f"{format_duration(active_seconds)} | "
-        f"Idle: "
-        f"{format_duration(idle_seconds)} | "
-        f"{timestamp}"
-    )
-
-
-    return {
-
-        "status":
-            "success",
-
-        "employee_id":
-            employee_id,
-
-        "message":
-            "Activity saved successfully"
-    }
-
-
-# ============================================================
-# RECEIVE BROWSER HISTORY
-# ============================================================
-
-@app.post("/api/browser-history")
-def receive_browser_history(data: dict):
-
-    employee_id = data.get(
-        "employee_id"
-    )
-
-    if not employee_id:
-
-        return {
-
-            "status":
-                "failed",
-
-            "message":
-                "employee_id is required"
-        }
-
-
-    browser = data.get(
-        "browser",
-        "Chrome"
-    )
-
-
-    history_items = data.get(
-        "history",
-        []
-    )
-
-
-    if not isinstance(
-        history_items,
-        list
-    ):
-
-        return {
-
-            "status":
-                "failed",
-
-            "message":
-                "history must be a list"
-        }
-
-
-    saved_count = 0
-
-
-    for item in history_items:
-
-        if not isinstance(
-            item,
-            dict
-        ):
-
-            continue
-
-
-        url = item.get(
-            "url",
-            ""
-        )
-
-
-        title = item.get(
-            "title",
-            ""
-        )
-
-
-        visit_time = item.get(
-            "visit_time"
-        )
-
-
+    iso = ts.isoformat()
+
+    batch = db.batch()
+    batch.set(db.collection("latest_activity").document(emp), {
+        **common, "status": "active", "application": data.application,
+        "window_title": data.window_title, "timestamp": iso, "last_sync_ist": ts_ist.isoformat(),
+    })
+    batch.set(db.collection("daily_activity").document(f"{emp}_{date}"), {
+        **common, "date": date, "last_application": data.application, "last_status": "active",
+        "last_window": data.window_title, "last_sync": iso, "last_sync_ist": ts_ist.isoformat(),
+        "updated_at": firestore.SERVER_TIMESTAMP,
+    }, merge=True)
+    batch.set(db.collection("activity_logs").document(), {
+        "employee_id": emp, "employee_name": name_of(emp), "date": date, "status": "active",
+        "application": data.application, "window_title": data.window_title, "timestamp": iso,
+        "session_seconds": session, "active_seconds": active, "idle_seconds": idle,
+        "application_usage": usage, "created_at": firestore.SERVER_TIMESTAMP,
+    })
+    batch.commit()
+
+    log.info("activity %s | %s | active %s", emp, data.application, format_duration(active))
+    return {"status": "success", "employee_id": emp, "message": "Activity saved successfully"}
+
+
+@app.post("/api/browser-history", dependencies=[Depends(require_tracker)])
+def receive_browser_history(data: HistoryIn):
+    db = get_db()
+    batch, saved = db.batch(), 0
+    for item in data.history[:MAX_HISTORY_ITEMS]:
+        url = str(item.get("url", ""))[:2000]
         if not url:
-
             continue
-
-
-        history_data = {
-
-            "employee_id":
-                employee_id,
-
-            "employee_name":
-                get_employee_name(
-                    employee_id
-                ),
-
-            "browser":
-                browser,
-
-            "url":
-                url,
-
-            "title":
-                title or "Untitled",
-
-            "visit_time":
-                visit_time,
-
-            "created_at":
-                firestore.SERVER_TIMESTAMP
-        }
-
-
-        db.collection(
-            "browser_history"
-        ).add(
-            history_data
-        )
-
-
-        saved_count += 1
-
-
-    print(
-        f"[BROWSER HISTORY] "
-        f"{employee_id} | "
-        f"{browser} | "
-        f"Saved: {saved_count}"
-    )
-
-
-    return {
-
-        "status":
-            "success",
-
-        "employee_id":
-            employee_id,
-
-        "saved_count":
-            saved_count,
-
-        "message":
-            "Browser history saved successfully"
-    }
-
-
-# ============================================================
-# GET BROWSER HISTORY
-# DATE FILTER INCLUDED
-# ============================================================
-
-@app.get("/api/browser-history")
-def get_browser_history(
-
-    employee_id: str = Query(...),
-
-    date: str = Query(
-        default=None
-    ),
-
-    limit: int = Query(
-        default=50,
-        ge=1,
-        le=500
-    )
-
-):
-
-    # --------------------------------------------------------
-    # Validate selected date
-    # --------------------------------------------------------
-
-    if date:
-
-        try:
-
-            datetime.strptime(
-                date,
-                "%Y-%m-%d"
-            )
-
-        except ValueError:
-
-            return {
-
-                "status":
-                    "failed",
-
-                "message":
-                    "Invalid date format. Use YYYY-MM-DD."
-            }
-
-
-    # --------------------------------------------------------
-    # Get employee browser history
-    # --------------------------------------------------------
-
-    docs = (
-        db.collection(
-            "browser_history"
-        )
-        .where(
-            "employee_id",
-            "==",
-            employee_id
-        )
-        .stream()
-    )
-
-
-    history = []
-
-
-    for doc in docs:
-
-        item = doc.to_dict()
-
-
-        visit_time = item.get(
-            "visit_time"
-        )
-
-
-        parsed_time = (
-            parse_timestamp(
-                visit_time
-            )
-        )
-
-
-        if parsed_time is None:
-
-            continue
-
-
-        # Convert to IST
-        visit_time_ist = (
-            parsed_time.astimezone(
-                IST
-            )
-        )
-
-
-        # ----------------------------------------------------
-        # DATE FILTER
-        # ----------------------------------------------------
-
-        if date:
-
-            visit_date = (
-                visit_time_ist.strftime(
-                    "%Y-%m-%d"
-                )
-            )
-
-
-            if visit_date != date:
-
-                continue
-
-
-        # ----------------------------------------------------
-        # Prepare response
-        # ----------------------------------------------------
-
-        history.append({
-
-            "employee_id":
-                employee_id,
-
-            "employee_name":
-                item.get(
-                    "employee_name",
-                    get_employee_name(
-                        employee_id
-                    )
-                ),
-
-            "browser":
-                item.get(
-                    "browser",
-                    "Chrome"
-                ),
-
-            "title":
-                item.get(
-                    "title"
-                ) or "Untitled",
-
-            "url":
-                item.get(
-                    "url",
-                    ""
-                ),
-
-            "visit_time":
-                visit_time_ist.isoformat()
-
+        batch.set(db.collection("browser_history").document(), {
+            "employee_id": data.employee_id, "employee_name": name_of(data.employee_id),
+            "browser": data.browser, "url": url,
+            "title": str(item.get("title") or "Untitled")[:300],
+            "visit_time": item.get("visit_time"), "created_at": firestore.SERVER_TIMESTAMP,
         })
+        saved += 1
+    if saved:
+        batch.commit()
+    return {"status": "success", "employee_id": data.employee_id, "saved_count": saved,
+            "message": "Browser history saved successfully"}
 
 
-    # --------------------------------------------------------
-    # Latest first
-    # --------------------------------------------------------
-
-    history.sort(
-        key=lambda x:
-            x.get(
-                "visit_time",
-                ""
-            ),
-        reverse=True
-    )
-
-
-    # Apply limit AFTER date filtering
+@app.get("/api/browser-history", dependencies=[Depends(require_dashboard)])
+def get_browser_history(employee_id: str = Query(..., max_length=64),
+                        date: str | None = Query(default=None),
+                        limit: int = Query(default=50, ge=1, le=500)):
+    if date:
+        valid_date(date)
+    docs = get_db().collection("browser_history").where("employee_id", "==", employee_id).stream()
+    history = []
+    for doc in docs:
+        item = doc.to_dict()
+        t = parse_timestamp(item.get("visit_time"))
+        if t is None:
+            continue
+        t_ist = t.astimezone(IST)
+        if date and t_ist.strftime("%Y-%m-%d") != date:
+            continue
+        history.append({
+            "employee_id": employee_id,
+            "employee_name": item.get("employee_name", name_of(employee_id)),
+            "browser": item.get("browser", "Chrome"),
+            "title": item.get("title") or "Untitled",
+            "url": item.get("url", ""),
+            "visit_time": t_ist.isoformat(),
+        })
+    history.sort(key=lambda x: x["visit_time"], reverse=True)
     history = history[:limit]
+    return {"status": "success", "employee_id": employee_id, "employee_name": name_of(employee_id),
+            "date": date, "count": len(history), "history": history}
 
 
-    return {
-
-        "status":
-            "success",
-
-        "employee_id":
-            employee_id,
-
-        "employee_name":
-            get_employee_name(
-                employee_id
-            ),
-
-        "date":
-            date,
-
-        "count":
-            len(history),
-
-        "history":
-            history
-    }
-
-
-# ============================================================
-# LIVE TEAM ACTIVITY
-# ============================================================
-
-@app.get("/api/team")
+@app.get("/api/team", dependencies=[Depends(require_dashboard)])
 def get_team_activity():
-
-    docs = (
-        db.collection(
-            "latest_activity"
-        ).stream()
-    )
-
-
+    now = datetime.now(timezone.utc)
     employees = []
-
-
-    now = datetime.now(
-        timezone.utc
-    )
-
-
-    for doc in docs:
-
-        employee = doc.to_dict()
-
-
-        last_sync = employee.get(
-            "timestamp"
-        )
-
-
-        last_time = (
-            parse_timestamp(
-                last_sync
-            )
-        )
-
-
-        if last_time is None:
-
-            employee["status"] = (
-                "offline"
-            )
-
-            employee[
-                "seconds_since_last_sync"
-            ] = None
-
-
+    for doc in get_db().collection("latest_activity").stream():
+        emp = doc.to_dict()
+        last = parse_timestamp(emp.get("timestamp"))
+        if last is None:
+            emp["status"], emp["seconds_since_last_sync"] = "offline", None
         else:
-
-            seconds_since_sync = (
-                now - last_time
-            ).total_seconds()
-
-
-            seconds_since_sync = max(
-                seconds_since_sync,
-                0
-            )
-
-
-            employee[
-                "seconds_since_last_sync"
-            ] = int(
-                seconds_since_sync
-            )
+            gap = max((now - last).total_seconds(), 0)
+            emp["seconds_since_last_sync"] = int(gap)
+            emp["status"] = "active" if gap <= OFFLINE_THRESHOLD_SECONDS else "offline"
+            emp["last_sync_ist"] = last.astimezone(IST).isoformat()
+        emp["employee_name"] = name_of(emp.get("employee_id", ""))
+        employees.append(emp)
+    active = sum(1 for e in employees if e["status"] == "active")
+    return {"status": "success", "count": len(employees), "total_employees": len(employees),
+            "active_employees": active, "offline_employees": len(employees) - active,
+            "employees": employees}
 
 
-            if (
-                seconds_since_sync
-                <= OFFLINE_THRESHOLD_SECONDS
-            ):
-
-                employee["status"] = (
-                    "active"
-                )
-
-            else:
-
-                employee["status"] = (
-                    "offline"
-                )
-
-
-            employee[
-                "last_sync_ist"
-            ] = (
-                last_time
-                .astimezone(
-                    IST
-                )
-                .isoformat()
-            )
-
-
-        add_employee_details(
-            employee
-        )
-
-
-        employees.append(
-            employee
-        )
-
-
-    total_employees = len(
-        employees
-    )
-
-
-    active_employees = sum(
-
-        1
-
-        for employee
-        in employees
-
-        if employee.get(
-            "status"
-        ) == "active"
-
-    )
-
-
-    offline_employees = (
-        total_employees
-        - active_employees
-    )
-
-
-    return {
-
-        "status":
-            "success",
-
-        "count":
-            total_employees,
-
-        "total_employees":
-            total_employees,
-
-        "active_employees":
-            active_employees,
-
-        "offline_employees":
-            offline_employees,
-
-        "employees":
-            employees
-    }
-
-
-# ============================================================
-# DAILY TEAM ACTIVITY
-# ============================================================
-
-@app.get("/api/team/daily")
-def get_daily_team_activity(
-
-    date: str = Query(
-        default=None
-    )
-
-):
-
-    if not date:
-
-        selected_date = (
-            datetime.now(
-                IST
-            ).strftime(
-                "%Y-%m-%d"
-            )
-        )
-
-    else:
-
-        try:
-
-            datetime.strptime(
-                date,
-                "%Y-%m-%d"
-            )
-
-            selected_date = date
-
-        except ValueError:
-
-            return {
-
-                "status":
-                    "failed",
-
-                "message":
-                    "Invalid date format. Use YYYY-MM-DD."
-            }
-
-
-    docs = (
-        db.collection(
-            "daily_activity"
-        )
-        .where(
-            "date",
-            "==",
-            selected_date
-        )
-        .stream()
-    )
-
-
+@app.get("/api/team/daily", dependencies=[Depends(require_dashboard)])
+def get_daily_team_activity(date: str | None = Query(default=None)):
+    selected = date or datetime.now(IST).strftime("%Y-%m-%d")
+    valid_date(selected)
     employees = []
+    for doc in get_db().collection("daily_activity").where("date", "==", selected).stream():
+        emp = doc.to_dict()
+        emp["employee_name"] = name_of(emp.get("employee_id", ""))
+        emp.pop("updated_at", None)  # Firestore timestamp is not JSON-serialisable by default
+        employees.append(emp)
+    return {"status": "success", "date": selected, "count": len(employees), "employees": employees}
 
 
-    for doc in docs:
-
-        employee = doc.to_dict()
-
-
-        add_employee_details(
-            employee
-        )
-
-
-        employees.append(
-            employee
-        )
-
-
-    return {
-
-        "status":
-            "success",
-
-        "date":
-            selected_date,
-
-        "count":
-            len(employees),
-
-        "employees":
-            employees
-    }
-
-
-# ============================================================
-# SINGLE EMPLOYEE
-# ============================================================
-
-@app.get(
-    "/api/employee/{employee_id}"
-)
-def get_employee_activity(
-    employee_id: str
-):
-
-    today = (
-        datetime.now(
-            IST
-        ).strftime(
-            "%Y-%m-%d"
-        )
-    )
-
-
-    document_id = (
-        f"{employee_id}_{today}"
-    )
-
-
-    doc = (
-        db.collection(
-            "daily_activity"
-        )
-        .document(
-            document_id
-        )
-        .get()
-    )
-
-
+@app.get("/api/employee/{employee_id}", dependencies=[Depends(require_dashboard)])
+def get_employee_activity(employee_id: str):
+    today = datetime.now(IST).strftime("%Y-%m-%d")
+    doc = get_db().collection("daily_activity").document(f"{employee_id}_{today}").get()
     if not doc.exists:
-
-        return {
-
-            "status":
-                "not_found",
-
-            "message":
-                "No activity found for today",
-
-            "employee_id":
-                employee_id,
-
-            "date":
-                today
-        }
-
-
-    employee_data = (
-        doc.to_dict()
-    )
-
-
-    add_employee_details(
-        employee_data
-    )
-
-
-    return {
-
-        "status":
-            "success",
-
-        "data":
-            employee_data
-    }
-
-
-# ============================================================
-# LOCAL RUN
-# ============================================================
-
-if __name__ == "__main__":
-
-    import uvicorn
-
-
-    uvicorn.run(
-
-        "server:app",
-
-        host="0.0.0.0",
-
-        port=8000,
-
-        reload=True
-    )
+        return {"status": "not_found", "message": "No activity found for today",
+                "employee_id": employee_id, "date": today}
+    data = doc.to_dict()
+    data["employee_name"] = name_of(employee_id)
+    data.pop("updated_at", None)
+    return {"status": "success", "data": data}

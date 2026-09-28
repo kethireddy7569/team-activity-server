@@ -1,3 +1,8 @@
 serviceAccountKey.json
-_pycache__/
+__pycache__/
+*.pyc
 .env
+.env.*
+!.env.example
+.vercel/
+tracker_config.json

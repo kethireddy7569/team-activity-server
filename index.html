@@ -615,7 +615,6 @@ body {
     </div>
 
 
-    <!-- EMPLOYEE CARDS -->
 
     <div
         class="employee-grid"
@@ -633,11 +632,6 @@ const API_URL = "/api/team";
 
 const DAILY_API_URL =
     "/api/team/daily";
-
-
-/* =====================================================
-   TODAY DATE
-===================================================== */
 
 function getTodayDate() {
 
@@ -661,10 +655,6 @@ function getTodayDate() {
 }
 
 
-/* =====================================================
-   FORMAT SELECTED DATE
-===================================================== */
-
 function formatSelectedDate(
     dateString
 ) {
@@ -683,10 +673,6 @@ function formatSelectedDate(
     return `${parts[2]}-${parts[1]}-${parts[0]}`;
 }
 
-
-/* =====================================================
-   DATE PICKER
-===================================================== */
 
 const datePicker =
     document.getElementById(
@@ -708,11 +694,6 @@ datePicker.addEventListener(
 
     }
 );
-
-
-/* =====================================================
-   LOAD SELECTED DATE
-===================================================== */
 
 async function loadSelectedDate(
     selectedDate
@@ -751,11 +732,6 @@ async function loadSelectedDate(
 
 }
 
-
-/* =====================================================
-   TODAY BUTTON
-===================================================== */
-
 function loadToday() {
 
     const today =
@@ -770,10 +746,6 @@ function loadToday() {
 
 }
 
-
-/* =====================================================
-   LIVE TEAM DATA
-===================================================== */
 
 async function loadLiveTeamData(
     selectedDate
@@ -845,10 +817,6 @@ async function loadLiveTeamData(
 
 }
 
-
-/* =====================================================
-   HISTORICAL TEAM DATA
-===================================================== */
 
 async function loadDailyTeamData(
     selectedDate
@@ -925,10 +893,6 @@ async function loadDailyTeamData(
 }
 
 
-/* =====================================================
-   SUMMARY
-===================================================== */
-
 function updateSummary(
     employees
 ) {
@@ -979,9 +943,6 @@ function updateSummary(
 }
 
 
-/* =====================================================
-   RENDER EMPLOYEES
-===================================================== */
 
 function renderEmployees(
     employees,
@@ -1353,8 +1314,7 @@ function renderEmployees(
             );
 
 
-            /* IMPORTANT:
-               Selected date is passed here */
+        
 
             loadBrowserHistory(
                 employee.employee_id,
@@ -1367,11 +1327,6 @@ function renderEmployees(
 
 }
 
-
-/* =====================================================
-   BROWSER HISTORY
-   SELECTED DATE FILTER
-===================================================== */
 
 async function loadBrowserHistory(
     employeeId,
@@ -1527,10 +1482,6 @@ async function loadBrowserHistory(
 }
 
 
-/* =====================================================
-   DURATION TO SECONDS
-===================================================== */
-
 function durationToSeconds(
     value
 ) {
@@ -1613,11 +1564,6 @@ function durationToSeconds(
 
 }
 
-
-/* =====================================================
-   FORMAT DATE/TIME
-===================================================== */
-
 function formatDateTime(
     timestamp
 ) {
@@ -1677,10 +1623,6 @@ function formatDateTime(
 }
 
 
-/* =====================================================
-   FORMAT DURATION
-===================================================== */
-
 function formatDuration(
     value
 ) {
@@ -1706,11 +1648,6 @@ function formatDuration(
     return `${hours}h ${minutes}m`;
 
 }
-
-
-/* =====================================================
-   ESCAPE HTML
-===================================================== */
 
 function escapeHTML(
     value
@@ -1744,11 +1681,6 @@ function escapeHTML(
         );
 
 }
-
-
-/* =====================================================
-   ERROR HANDLING
-===================================================== */
 
 function showError(
     message
@@ -1808,10 +1740,6 @@ function hideError() {
 }
 
 
-/* =====================================================
-   REFRESH TIME
-===================================================== */
-
 function updateRefreshTime() {
 
     document.getElementById(
@@ -1833,18 +1761,10 @@ function updateRefreshTime() {
 }
 
 
-/* =====================================================
-   INITIAL LOAD
-===================================================== */
-
 loadSelectedDate(
     getTodayDate()
 );
 
-
-/* =====================================================
-   AUTO REFRESH - 1 MINUTE
-===================================================== */
 
 setInterval(
     function () {
