@@ -14,16 +14,6 @@ ACTIVITYWATCH_URL = "http://127.0.0.1:5600"
 
 SERVER_URL = "https://team-activity-server.vercel.app"
 
-# API key: set env var TRACKER_API_KEY or create tracker_config.json {"api_key": "..."}
-import json as _json, os as _os
-TRACKER_API_KEY = _os.environ.get("TRACKER_API_KEY", "")
-if not TRACKER_API_KEY:
-    try:
-        with open(_os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "tracker_config.json")) as _f:
-            TRACKER_API_KEY = _json.load(_f).get("api_key", "")
-    except Exception:
-        pass
-
 # Send data every 60 seconds
 INTERVAL = 60
 
@@ -688,8 +678,6 @@ def send_activity(
             f"{SERVER_URL}/api/activity",
 
             json=payload,
-
-            headers={"X-API-Key": TRACKER_API_KEY},
 
             timeout=15
         )
